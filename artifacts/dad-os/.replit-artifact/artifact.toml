@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Dad OS"
+version = "1.0.0"
+id = "artifacts/dad-os"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21496
+
+[services.development]
+run = "pnpm --filter @workspace/dad-os run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/dad-os", "run", "build" ]
+publicDir = "artifacts/dad-os/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21496"
+BASE_PATH = "/"

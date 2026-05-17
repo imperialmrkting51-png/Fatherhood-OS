@@ -1,22 +1,28 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Dad OS API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: children
+    description: Child profile operations
+  - name: activities
+    description: Activity suggestion operations
+  - name: memories
+    description: Memory journal operations
+  - name: dashboard
+    description: Dashboard summary operations
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +30,525 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /children:
+    get:
+      operationId: listChildren
+      tags: [children]
+      summary: List all children
+      responses:
+        "200":
+          description: List of children
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Child"
+    post:
+      operationId: createChild
+      tags: [children]
+      summary: Create a child profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChildInput"
+      responses:
+        "201":
+          description: Created child
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Child"
+
+  /children/{id}:
+    get:
+      operationId: getChild
+      tags: [children]
+      summary: Get a child profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Child profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Child"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateChild
+      tags: [children]
+      summary: Update a child profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChildUpdate"
+      responses:
+        "200":
+          description: Updated child
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Child"
+    delete:
+      operationId: deleteChild
+      tags: [children]
+      summary: Delete a child profile
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /children/{id}/guidance:
+    get:
+      operationId: getChildGuidance
+      tags: [children]
+      summary: Get age-based guidance for a child
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Age-based guidance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AgeGuidance"
+
+  /children/{id}/activities:
+    get:
+      operationId: listChildActivities
+      tags: [activities]
+      summary: List activities for a child
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of activities
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Activity"
+    post:
+      operationId: createChildActivity
+      tags: [activities]
+      summary: Create an activity for a child
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivityInput"
+      responses:
+        "201":
+          description: Created activity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Activity"
+
+  /activities/{id}:
+    patch:
+      operationId: updateActivity
+      tags: [activities]
+      summary: Update an activity
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivityUpdate"
+      responses:
+        "200":
+          description: Updated activity
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Activity"
+    delete:
+      operationId: deleteActivity
+      tags: [activities]
+      summary: Delete an activity
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /children/{id}/memories:
+    get:
+      operationId: listChildMemories
+      tags: [memories]
+      summary: List memories for a child
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of memories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Memory"
+    post:
+      operationId: createChildMemory
+      tags: [memories]
+      summary: Create a memory for a child
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemoryInput"
+      responses:
+        "201":
+          description: Created memory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Memory"
+
+  /memories/{id}:
+    get:
+      operationId: getMemory
+      tags: [memories]
+      summary: Get a memory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Memory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Memory"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateMemory
+      tags: [memories]
+      summary: Update a memory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemoryUpdate"
+      responses:
+        "200":
+          description: Updated memory
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Memory"
+    delete:
+      operationId: deleteMemory
+      tags: [memories]
+      summary: Delete a memory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get dashboard summary
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dashboard"
+
 components:
   schemas:
     HealthStatus:
       type: object
+      required: [status]
       properties:
         status:
           type: string
-      required:
-        - status
 
+    Child:
+      type: object
+      required: [id, name, birthdate, avatarColor, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        birthdate:
+          type: string
+        avatarColor:
+          type: string
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    ChildInput:
+      type: object
+      required: [name, birthdate]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        birthdate:
+          type: string
+        avatarColor:
+          type: string
+        notes:
+          type: string
+
+    ChildUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        birthdate:
+          type: string
+        avatarColor:
+          type: string
+        notes:
+          type: ["string", "null"]
+
+    AgeGuidance:
+      type: object
+      required: [childId, ageYears, ageMonths, stage, stageName, description, tips, suggestedActivities]
+      properties:
+        childId:
+          type: integer
+        ageYears:
+          type: integer
+        ageMonths:
+          type: integer
+        stage:
+          type: string
+        stageName:
+          type: string
+        description:
+          type: string
+        tips:
+          type: array
+          items:
+            type: string
+        suggestedActivities:
+          type: array
+          items:
+            type: string
+
+    Activity:
+      type: object
+      required: [id, childId, title, category, completed, createdAt]
+      properties:
+        id:
+          type: integer
+        childId:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        category:
+          type: string
+        completed:
+          type: boolean
+        weekOf:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    ActivityInput:
+      type: object
+      required: [title, category]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        category:
+          type: string
+        weekOf:
+          type: string
+
+    ActivityUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        category:
+          type: string
+        completed:
+          type: boolean
+        weekOf:
+          type: ["string", "null"]
+
+    Memory:
+      type: object
+      required: [id, childId, title, date, createdAt]
+      properties:
+        id:
+          type: integer
+        childId:
+          type: integer
+        title:
+          type: string
+        body:
+          type: ["string", "null"]
+        date:
+          type: string
+        mood:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    MemoryInput:
+      type: object
+      required: [title, date]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        body:
+          type: string
+        date:
+          type: string
+        mood:
+          type: string
+        imageUrl:
+          type: string
+
+    MemoryUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        body:
+          type: ["string", "null"]
+        date:
+          type: string
+        mood:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+
+    Dashboard:
+      type: object
+      required: [totalChildren, totalMemories, totalActivities, completedActivities, recentMemories, childrenSummary]
+      properties:
+        totalChildren:
+          type: integer
+        totalMemories:
+          type: integer
+        totalActivities:
+          type: integer
+        completedActivities:
+          type: integer
+        recentMemories:
+          type: array
+          items:
+            $ref: "#/components/schemas/Memory"
+        childrenSummary:
+          type: array
+          items:
+            $ref: "#/components/schemas/ChildSummary"
+
+    ChildSummary:
+      type: object
+      required: [id, name, ageYears, ageMonths, avatarColor, memoryCount, activityCount]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        ageYears:
+          type: integer
+        ageMonths:
+          type: integer
+        avatarColor:
+          type: string
+        memoryCount:
+          type: integer
+        activityCount:
+          type: integer
