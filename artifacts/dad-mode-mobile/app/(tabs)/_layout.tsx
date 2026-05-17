@@ -3,6 +3,7 @@ import { Redirect, Tabs } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import React from "react";
 import { ActivityIndicator, Platform, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { C, F } from "@/constants/theme";
 
 function LoadingScreen() {
@@ -15,8 +16,13 @@ function LoadingScreen() {
 
 export default function TabLayout() {
   const { isSignedIn, isLoaded } = useAuth();
+  const insets = useSafeAreaInsets();
+
   if (!isLoaded) return <LoadingScreen />;
   if (!isSignedIn) return <Redirect href="/sign-in" />;
+
+  const bottomPad = Math.max(insets.bottom, Platform.OS === "ios" ? 24 : 12);
+  const tabBarHeight = 52 + bottomPad;
 
   return (
     <Tabs
@@ -28,9 +34,9 @@ export default function TabLayout() {
           backgroundColor: C.bg,
           borderTopWidth: 2,
           borderTopColor: C.border,
-          height: Platform.OS === "ios" ? 88 : 64,
+          height: tabBarHeight,
           paddingTop: 8,
-          paddingBottom: Platform.OS === "ios" ? 28 : 8,
+          paddingBottom: bottomPad,
           elevation: 0,
           shadowOpacity: 0,
         },
