@@ -7,6 +7,8 @@ import {
   useFonts as usePS2P,
 } from "@expo-google-fonts/press-start-2p";
 import { ClerkProvider, useAuth } from "@clerk/expo";
+import { Feather } from "@expo/vector-icons";
+import { useFonts } from "expo-font";
 import * as SecureStore from "expo-secure-store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
@@ -66,6 +68,8 @@ function RootLayoutNav() {
 export default function RootLayout() {
   const [vt323Loaded, vt323Error] = useVT323({ VT323_400Regular });
   const [ps2pLoaded, ps2pError] = usePS2P({ PressStart2P_400Regular });
+  // Explicitly preload Feather icon fonts so they render on native before any screen mounts
+  const [iconsLoaded, iconsError] = useFonts(Feather.font);
 
   const [fontTimedOut, setFontTimedOut] = useState(false);
 
@@ -75,8 +79,9 @@ export default function RootLayout() {
   }, []);
 
   const ready =
-    (vt323Loaded || !!vt323Error) &&
-    (ps2pLoaded || !!ps2pError) ||
+    ((vt323Loaded || !!vt323Error) &&
+    (ps2pLoaded || !!ps2pError) &&
+    (iconsLoaded || !!iconsError)) ||
     fontTimedOut;
 
   useEffect(() => {
