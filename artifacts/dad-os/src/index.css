@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323:wght@400&family=Inter:wght@400..700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Inter:wght@400..700&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin "@tailwindcss/typography";
@@ -67,51 +67,71 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* Midnight campfire — inspired by pixel RPG night scene */
 :root {
-  --background: 240 20% 4%;
-  --foreground: 120 100% 80%;
-  --border: 120 80% 25%;
-  --input: 240 20% 8%;
-  --ring: 120 100% 50%;
+  --opaque-button-border-intensity: 6;
 
-  --card: 240 20% 7%;
-  --card-foreground: 120 100% 80%;
-  --card-border: 120 80% 20%;
+  /* Deep midnight blue sky */
+  --background: 218 45% 9%;
+  /* Moonlight silver text */
+  --foreground: 210 38% 84%;
 
-  --popover: 240 20% 7%;
-  --popover-foreground: 120 100% 80%;
-  --popover-border: 120 80% 20%;
+  /* Stone slate borders */
+  --border: 218 28% 22%;
+  --input: 218 38% 13%;
+  --ring: 35 82% 58%;
 
-  --primary: 120 100% 50%;
-  --primary-foreground: 240 20% 4%;
+  /* Stone wall panels */
+  --card: 218 38% 13%;
+  --card-foreground: 210 38% 84%;
+  --card-border: 218 28% 20%;
 
-  --secondary: 240 20% 12%;
-  --secondary-foreground: 120 100% 80%;
+  --popover: 218 38% 13%;
+  --popover-foreground: 210 38% 84%;
+  --popover-border: 218 28% 20%;
 
-  --muted: 240 20% 10%;
-  --muted-foreground: 120 50% 50%;
+  /* Campfire amber — warm glow */
+  --primary: 35 82% 58%;
+  --primary-foreground: 218 45% 9%;
 
-  --accent: 300 100% 60%;
-  --accent-foreground: 240 20% 4%;
+  /* Dark stone fill */
+  --secondary: 218 35% 17%;
+  --secondary-foreground: 210 38% 84%;
 
-  --destructive: 0 100% 50%;
-  --destructive-foreground: 240 20% 4%;
+  /* Deep cave shadow */
+  --muted: 218 38% 15%;
+  --muted-foreground: 210 22% 52%;
 
-  --sidebar: 240 20% 3%;
-  --sidebar-foreground: 120 100% 80%;
-  --sidebar-border: 120 80% 15%;
-  --sidebar-primary: 120 100% 50%;
-  --sidebar-primary-foreground: 240 20% 4%;
-  --sidebar-accent: 240 20% 10%;
-  --sidebar-accent-foreground: 120 100% 80%;
-  --sidebar-ring: 120 100% 50%;
+  /* Moonlight blue accent */
+  --accent: 210 55% 62%;
+  --accent-foreground: 218 45% 9%;
+
+  /* Ember red for destructive */
+  --destructive: 10 72% 48%;
+  --destructive-foreground: 210 38% 90%;
+
+  /* Darkest stone for sidebar */
+  --sidebar: 218 48% 7%;
+  --sidebar-foreground: 210 38% 84%;
+  --sidebar-border: 218 28% 18%;
+  --sidebar-primary: 35 82% 58%;
+  --sidebar-primary-foreground: 218 45% 9%;
+  --sidebar-accent: 218 38% 13%;
+  --sidebar-accent-foreground: 210 38% 84%;
+  --sidebar-ring: 35 82% 58%;
+
+  --chart-1: 35 82% 58%;
+  --chart-2: 210 55% 62%;
+  --chart-3: 130 38% 38%;
+  --chart-4: 275 40% 55%;
+  --chart-5: 10 72% 48%;
 
   --app-font-sans: 'VT323', monospace;
   --app-font-serif: 'Press Start 2P', cursive;
   --app-font-mono: 'VT323', monospace;
-  --radius: 0rem;
-  
-  --opaque-button-border-intensity: 0;
+  --radius: 0.25rem;
+
+  --opaque-button-border-intensity: 8;
 
   --sidebar-primary-border: hsl(from hsl(var(--sidebar-primary)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
   --sidebar-accent-border: hsl(from hsl(var(--sidebar-accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
@@ -120,46 +140,6 @@
   --muted-border: hsl(from hsl(var(--muted)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
   --accent-border: hsl(from hsl(var(--accent)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
-}
-
-.dark {
-  --background: 240 20% 4%;
-  --foreground: 120 100% 80%;
-  --border: 120 80% 25%;
-  --input: 240 20% 8%;
-  --ring: 120 100% 50%;
-
-  --card: 240 20% 7%;
-  --card-foreground: 120 100% 80%;
-  --card-border: 120 80% 20%;
-
-  --popover: 240 20% 7%;
-  --popover-foreground: 120 100% 80%;
-  --popover-border: 120 80% 20%;
-
-  --primary: 120 100% 50%;
-  --primary-foreground: 240 20% 4%;
-
-  --secondary: 240 20% 12%;
-  --secondary-foreground: 120 100% 80%;
-
-  --muted: 240 20% 10%;
-  --muted-foreground: 120 50% 50%;
-
-  --accent: 300 100% 60%;
-  --accent-foreground: 240 20% 4%;
-
-  --destructive: 0 100% 50%;
-  --destructive-foreground: 240 20% 4%;
-
-  --sidebar: 240 20% 3%;
-  --sidebar-foreground: 120 100% 80%;
-  --sidebar-border: 120 80% 15%;
-  --sidebar-primary: 120 100% 50%;
-  --sidebar-primary-foreground: 240 20% 4%;
-  --sidebar-accent: 240 20% 10%;
-  --sidebar-accent-foreground: 120 100% 80%;
-  --sidebar-ring: 120 100% 50%;
 }
 
 @layer base {
@@ -175,33 +155,21 @@
 }
 
 @layer utilities {
+  /* Campfire warm glow — replaces neon effects */
   .neon-glow {
-    box-shadow: 0 0 8px hsl(var(--primary)), 0 0 20px hsl(var(--primary) / 0.4);
+    box-shadow: 0 0 10px hsl(var(--primary) / 0.5), 0 0 24px hsl(var(--primary) / 0.25);
   }
   .neon-text {
-    text-shadow: 0 0 8px hsl(var(--primary)), 0 0 20px hsl(var(--primary) / 0.4);
+    text-shadow: 0 0 10px hsl(var(--primary) / 0.7), 0 0 24px hsl(var(--primary) / 0.35);
   }
   .neon-border {
     border-color: hsl(var(--primary));
-    box-shadow: 0 0 6px hsl(var(--primary) / 0.6), inset 0 0 6px hsl(var(--primary) / 0.1);
+    box-shadow: 0 0 6px hsl(var(--primary) / 0.4), inset 0 0 6px hsl(var(--primary) / 0.08);
   }
-  body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0, 0.05) 2px,
-      rgba(0,0,0, 0.05) 4px
-    );
-    z-index: 9999;
-  }
+  /* Stone pixel border — slate with amber drop shadow */
   .pixel-border {
-    border: 2px solid hsl(var(--primary));
-    box-shadow: 0 0 8px hsl(var(--primary) / 0.5), 4px 4px 0 hsl(var(--primary) / 0.3);
+    border: 2px solid hsl(var(--border));
+    box-shadow: 0 0 6px hsl(var(--primary) / 0.3), 3px 3px 0 hsl(218 45% 6%);
   }
 
   input[type="search"]::-webkit-search-cancel-button {
