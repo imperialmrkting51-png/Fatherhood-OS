@@ -3,64 +3,38 @@ import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import React from "react";
-import {
-  Alert,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useColors } from "@/hooks/useColors";
-import { FONTS } from "@/constants/fonts";
+import { C, F, GLOW } from "@/constants/theme";
 
-function SettingsRow({
-  icon,
-  label,
-  onPress,
-  destructive,
-  value,
+function Row({
+  icon, label, onPress, value, danger,
 }: {
-  icon: keyof typeof Feather.glyphMap;
+  icon: React.ComponentProps<typeof Feather>["name"];
   label: string;
   onPress?: () => void;
-  destructive?: boolean;
   value?: string;
+  danger?: boolean;
 }) {
-  const colors = useColors();
-  const iconColor = destructive ? colors.destructive : colors.primary;
+  const col = danger ? C.red : C.primary;
   return (
     <Pressable
-      style={({ pressed }) => [
-        styles.row,
-        {
-          backgroundColor: colors.card,
-          borderColor: destructive ? colors.destructive + "44" : colors.border,
-          opacity: pressed ? 0.8 : 1,
-        },
-      ]}
+      style={({ pressed }) => [s.row, { borderColor: danger ? C.red + "44" : C.border, opacity: pressed ? 0.8 : 1 }]}
       onPress={onPress}
     >
-      <View style={[styles.rowIcon, { backgroundColor: iconColor + "22", borderColor: iconColor + "44" }]}>
-        <Feather name={icon} size={18} color={iconColor} />
+      <View style={[s.rowIcon, { backgroundColor: col + "22", borderColor: col + "44" }]}>
+        <Feather name={icon} size={18} color={col} />
       </View>
-      <Text style={[styles.rowLabel, { color: destructive ? colors.destructive : colors.foreground }]}>
-        {label}
-      </Text>
-      <View style={styles.rowRight}>
-        {value ? (
-          <Text style={[styles.rowValue, { color: colors.mutedForeground }]}>{value}</Text>
-        ) : null}
-        <Feather name="chevron-right" size={16} color={colors.mutedForeground} />
+      <Text style={[s.rowLabel, { color: danger ? C.red : C.fg }]}>{label}</Text>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+        {value ? <Text style={[s.rowValue, { color: C.mutedFg }]}>{value}</Text> : null}
+        <Feather name="chevron-right" size={16} color={C.mutedFg} />
       </View>
     </Pressable>
   );
 }
 
 export default function Settings() {
-  const colors = useColors();
   const insets = useSafeAreaInsets();
   const { signOut } = useAuth();
   const { user } = useUser();
@@ -69,25 +43,15 @@ export default function Settings() {
   const topPad = Platform.OS === "web" ? 20 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
-  const displayName =
-    user?.fullName ||
-    user?.firstName ||
-    user?.primaryEmailAddress?.emailAddress?.split("@")[0] ||
-    "Dad";
+  const displayName = user?.fullName || user?.firstName || user?.primaryEmailAddress?.emailAddress?.split("@")[0] || "Dad";
   const email = user?.primaryEmailAddress?.emailAddress ?? "";
-  const initials = displayName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  const initials = displayName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 
   const handleSignOut = () => {
-    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
+    Alert.alert("Sign Out", "Ready to end your session?", [
       { text: "Cancel", style: "cancel" },
       {
-        text: "Sign Out",
-        style: "destructive",
+        text: "Sign Out", style: "destructive",
         onPress: async () => {
           if (Platform.OS !== "web") await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           await signOut();
@@ -99,187 +63,92 @@ export default function Settings() {
 
   return (
     <ScrollView
-      style={{ backgroundColor: colors.background }}
-      contentContainerStyle={[
-        styles.container,
-        { paddingTop: topPad + 16, paddingBottom: bottomPad + 100 },
-      ]}
+      style={{ backgroundColor: C.bg }}
+      contentContainerStyle={[s.container, { paddingTop: topPad + 16, paddingBottom: bottomPad + 100 }]}
     >
-      <Text style={[styles.title, { color: colors.primary }]}>SETTINGS</Text>
+      {/* Title */}
+      <Text style={[s.pageTitle, GLOW]}>SETTINGS</Text>
 
-      <View style={[styles.profileCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <View style={[styles.profileAvatar, { backgroundColor: colors.primary + "22", borderColor: colors.primary + "66" }]}>
-          <Text style={[styles.profileInitials, { color: colors.primary }]}>
-            {initials}
-          </Text>
+      {/* Profile card */}
+      <View style={s.profileCard}>
+        <View style={s.profileAvatar}>
+          <Text style={[s.profileInitials, GLOW]}>{initials}</Text>
         </View>
-        <View style={styles.profileInfo}>
-          <Text style={[styles.profileName, { color: colors.foreground }]}>
-            {displayName}
-          </Text>
-          <Text style={[styles.profileEmail, { color: colors.mutedForeground }]}>
-            {email}
-          </Text>
+        <View style={{ flex: 1, gap: 4 }}>
+          <Text style={[s.profileName, { color: C.fg }]}>{displayName}</Text>
+          <Text style={[s.profileEmail, { color: C.mutedFg }]}>{email}</Text>
         </View>
-        <View style={[styles.levelBadge, { backgroundColor: colors.primary + "22", borderColor: colors.primary + "55" }]}>
-          <Feather name="zap" size={14} color={colors.primary} />
-          <Text style={[styles.levelText, { color: colors.primary }]}>LVL 1</Text>
+        <View style={s.levelBadge}>
+          <Feather name="zap" size={14} color={C.primary} />
+          <Text style={[s.levelText, { color: C.primary }]}>LVL 1</Text>
         </View>
       </View>
 
-      <View style={styles.section}>
-        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
-          APP
-        </Text>
-        <View style={styles.sectionRows}>
-          <SettingsRow
-            icon="users"
-            label="Manage Kids"
-            onPress={() => router.push("/(tabs)/kids")}
-          />
-          <SettingsRow
-            icon="message-circle"
-            label="Conversation Starters"
-            onPress={() => router.push("/(tabs)/starters")}
-          />
+      {/* Section: App */}
+      <View style={s.section}>
+        <Text style={[s.sectionLabel, { color: C.mutedFg }]}>APP</Text>
+        <View style={s.rows}>
+          <Row icon="users" label="Manage Party" onPress={() => router.push("/(tabs)/kids")} />
+          <Row icon="message-circle" label="Conversation Starters" onPress={() => router.push("/(tabs)/starters")} />
         </View>
       </View>
 
-      <View style={styles.section}>
-        <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>
-          INFO
-        </Text>
-        <View style={styles.sectionRows}>
-          <SettingsRow icon="info" label="Version" value="1.0.0" />
-          <SettingsRow
-            icon="shield"
-            label="Dad Mode"
-            value="Track moments."
-          />
+      {/* Section: Info */}
+      <View style={s.section}>
+        <Text style={[s.sectionLabel, { color: C.mutedFg }]}>INFO</Text>
+        <View style={s.rows}>
+          <Row icon="info" label="Version" value="1.0.0" />
+          <Row icon="shield" label="Dad Mode" value="Quest log for fathers" />
         </View>
       </View>
 
-      <View style={styles.section}>
-        <View style={styles.sectionRows}>
-          <SettingsRow
-            icon="log-out"
-            label="Sign Out"
-            onPress={handleSignOut}
-            destructive
-          />
-        </View>
+      {/* Sign out */}
+      <View style={s.rows}>
+        <Row icon="log-out" label="Sign Out" onPress={handleSignOut} danger />
       </View>
 
-      <Text style={[styles.footer, { color: colors.mutedForeground }]}>
-        Built for dads who show up.
-      </Text>
+      <Text style={[s.footer, { color: C.mutedFg }]}>Built for dads who show up.</Text>
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 20,
-    gap: 24,
-  },
-  title: {
-    fontSize: 20,
-    fontFamily: FONTS.title,
-    letterSpacing: 3,
-    textShadowColor: "rgba(232,160,69,0.4)",
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 8,
-  },
+const s = StyleSheet.create({
+  container: { paddingHorizontal: 20, gap: 24 },
+  pageTitle: { fontFamily: F.title, fontSize: 14, color: C.primary },
+
   profileCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    borderRadius: 2,
-    borderWidth: 2,
-    padding: 16,
+    flexDirection: "row", alignItems: "center", gap: 14,
+    backgroundColor: C.card, borderWidth: 2, borderColor: C.border,
+    borderRadius: 2, padding: 16,
   },
   profileAvatar: {
-    width: 56,
-    height: 56,
-    borderRadius: 2,
-    borderWidth: 2,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
+    width: 56, height: 56, borderRadius: 2,
+    borderWidth: 2, borderColor: C.primary + "77",
+    backgroundColor: C.primary + "22",
+    alignItems: "center", justifyContent: "center", flexShrink: 0,
   },
-  profileInitials: {
-    fontSize: 22,
-    fontFamily: FONTS.title,
-  },
-  profileInfo: {
-    flex: 1,
-    gap: 4,
-  },
-  profileName: {
-    fontSize: 18,
-    fontFamily: FONTS.pixel,
-  },
-  profileEmail: {
-    fontSize: 14,
-    fontFamily: FONTS.pixel,
-  },
+  profileInitials: { fontFamily: F.title, fontSize: 18, color: C.primary },
+  profileName: { fontFamily: F.body, fontSize: 20 },
+  profileEmail: { fontFamily: F.body, fontSize: 15 },
   levelBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    borderRadius: 2,
-    borderWidth: 2,
+    flexDirection: "row", alignItems: "center", gap: 5,
+    backgroundColor: C.primary + "22", borderWidth: 2, borderColor: C.primary + "55",
+    borderRadius: 2, paddingHorizontal: 10, paddingVertical: 6,
   },
-  levelText: {
-    fontSize: 13,
-    fontFamily: FONTS.pixel,
-    letterSpacing: 1,
-  },
+  levelText: { fontFamily: F.body, fontSize: 15, letterSpacing: 1 },
+
   section: { gap: 8 },
-  sectionLabel: {
-    fontSize: 12,
-    fontFamily: FONTS.pixel,
-    letterSpacing: 2,
-    paddingHorizontal: 4,
-  },
-  sectionRows: { gap: 8 },
+  sectionLabel: { fontFamily: F.body, fontSize: 13, letterSpacing: 2, paddingHorizontal: 2 },
+  rows: { gap: 8 },
   row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    padding: 14,
-    borderWidth: 2,
-    borderRadius: 2,
+    flexDirection: "row", alignItems: "center", gap: 12, padding: 14,
+    backgroundColor: C.card, borderWidth: 2, borderRadius: 2,
   },
   rowIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 2,
-    borderWidth: 2,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
+    width: 36, height: 36, borderRadius: 2, borderWidth: 2,
+    alignItems: "center", justifyContent: "center", flexShrink: 0,
   },
-  rowLabel: {
-    flex: 1,
-    fontSize: 17,
-    fontFamily: FONTS.pixel,
-  },
-  rowRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  rowValue: {
-    fontSize: 14,
-    fontFamily: FONTS.pixel,
-  },
-  footer: {
-    fontSize: 15,
-    fontFamily: FONTS.pixel,
-    textAlign: "center",
-    marginTop: 8,
-  },
+  rowLabel: { flex: 1, fontFamily: F.body, fontSize: 18 },
+  rowValue: { fontFamily: F.body, fontSize: 15 },
+  footer: { fontFamily: F.body, fontSize: 16, textAlign: "center", marginTop: 8 },
 });
