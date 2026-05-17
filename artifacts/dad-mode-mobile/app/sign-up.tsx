@@ -46,9 +46,19 @@ export default function SignUp() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  function clerkMsg(err: unknown, fallback: string): string {
+    const clerkErr = err as { errors?: Array<{ message: string }> };
+    return (
+      clerkErr?.errors?.[0]?.message ??
+      (err instanceof Error ? err.message : fallback)
+    );
+  }
+
   const handleSubmit = async () => {
     if (!email || !password || isLoading || !isLoaded || !signUp) return;
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS !== "web") {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     setIsLoading(true);
     setError(null);
     try {
@@ -56,9 +66,7 @@ export default function SignUp() {
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       setStep("verify");
     } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : "Sign up failed. Please try again.";
-      setError(msg);
+      setError(clerkMsg(err, "Sign up failed. Please try again."));
     } finally {
       setIsLoading(false);
     }
@@ -66,7 +74,9 @@ export default function SignUp() {
 
   const handleVerify = async () => {
     if (!code || isLoading || !isLoaded || !signUp) return;
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS !== "web") {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     setIsLoading(true);
     setError(null);
     try {
@@ -74,11 +84,11 @@ export default function SignUp() {
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
         router.replace("/(tabs)");
+      } else {
+        setError("Verification could not be completed. Please try again.");
       }
     } catch (err: unknown) {
-      const msg =
-        err instanceof Error ? err.message : "Verification failed. Please try again.";
-      setError(msg);
+      setError(clerkMsg(err, "Verification failed. Please try again."));
     } finally {
       setIsLoading(false);
     }
@@ -94,7 +104,9 @@ export default function SignUp() {
   };
 
   const handleGoogleSignUp = useCallback(async () => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS !== "web") {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     try {
       const { createdSessionId, setActive: sa } = await startOAuthFlow({
         redirectUrl: AuthSession.makeRedirectUri(),

@@ -46,7 +46,9 @@ export default function SignIn() {
 
   const handleEmailSignIn = async () => {
     if (!email || !password || isLoading || !isLoaded || !signIn) return;
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS !== "web") {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     setIsLoading(true);
     setError(null);
     try {
@@ -57,10 +59,14 @@ export default function SignIn() {
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
         router.replace("/(tabs)");
+      } else {
+        setError("Sign in could not be completed. Please try again.");
       }
     } catch (err: unknown) {
+      const clerkErr = err as { errors?: Array<{ message: string }> };
       const msg =
-        err instanceof Error ? err.message : "Sign in failed. Please try again.";
+        clerkErr?.errors?.[0]?.message ??
+        (err instanceof Error ? err.message : "Sign in failed. Please try again.");
       setError(msg);
     } finally {
       setIsLoading(false);
@@ -68,7 +74,9 @@ export default function SignIn() {
   };
 
   const handleGoogleSignIn = useCallback(async () => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (Platform.OS !== "web") {
+      await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
     try {
       const { createdSessionId, setActive: sa } = await startOAuthFlow({
         redirectUrl: AuthSession.makeRedirectUri(),
