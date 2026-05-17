@@ -58,14 +58,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </SheetTrigger>
               <SheetContent side="left" className="w-[280px] p-6 bg-card border-r-0 pixel-border">
                 <div className="flex items-center gap-2 mb-8">
-                  <span className="font-serif text-sm neon-text text-primary">Fatherhood OS</span>
+                  <span className="font-serif text-sm neon-text text-primary">Dad Mode</span>
                 </div>
                 <NavLinks />
               </SheetContent>
             </Sheet>
             <Link href="/">
                <div className="flex items-center gap-2 cursor-pointer">
-                 <span className="font-serif text-sm neon-text hidden md:inline-block text-primary">Fatherhood OS</span>
+                 <span className="font-serif text-sm neon-text hidden md:inline-block text-primary">Dad Mode</span>
                </div>
             </Link>
           </div>
