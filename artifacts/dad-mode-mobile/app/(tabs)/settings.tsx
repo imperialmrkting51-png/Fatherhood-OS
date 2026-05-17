@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
+import { FONTS } from "@/constants/fonts";
 
 function SettingsRow({
   icon,
@@ -29,47 +30,28 @@ function SettingsRow({
   value?: string;
 }) {
   const colors = useColors();
+  const iconColor = destructive ? colors.destructive : colors.primary;
   return (
     <Pressable
       style={({ pressed }) => [
         styles.row,
         {
           backgroundColor: colors.card,
-          borderColor: colors.border,
+          borderColor: destructive ? colors.destructive + "44" : colors.border,
           opacity: pressed ? 0.8 : 1,
         },
       ]}
       onPress={onPress}
     >
-      <View
-        style={[
-          styles.rowIcon,
-          {
-            backgroundColor: destructive
-              ? colors.destructive + "22"
-              : colors.secondary,
-          },
-        ]}
-      >
-        <Feather
-          name={icon}
-          size={18}
-          color={destructive ? colors.destructive : colors.accent}
-        />
+      <View style={[styles.rowIcon, { backgroundColor: iconColor + "22", borderColor: iconColor + "44" }]}>
+        <Feather name={icon} size={18} color={iconColor} />
       </View>
-      <Text
-        style={[
-          styles.rowLabel,
-          { color: destructive ? colors.destructive : colors.foreground },
-        ]}
-      >
+      <Text style={[styles.rowLabel, { color: destructive ? colors.destructive : colors.foreground }]}>
         {label}
       </Text>
       <View style={styles.rowRight}>
         {value ? (
-          <Text style={[styles.rowValue, { color: colors.mutedForeground }]}>
-            {value}
-          </Text>
+          <Text style={[styles.rowValue, { color: colors.mutedForeground }]}>{value}</Text>
         ) : null}
         <Feather name="chevron-right" size={16} color={colors.mutedForeground} />
       </View>
@@ -84,7 +66,7 @@ export default function Settings() {
   const { user } = useUser();
   const router = useRouter();
 
-  const topPad = Platform.OS === "web" ? 67 : insets.top;
+  const topPad = Platform.OS === "web" ? 20 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
   const displayName =
@@ -107,7 +89,7 @@ export default function Settings() {
         text: "Sign Out",
         style: "destructive",
         onPress: async () => {
-          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          if (Platform.OS !== "web") await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
           await signOut();
           router.replace("/");
         },
@@ -123,20 +105,10 @@ export default function Settings() {
         { paddingTop: topPad + 16, paddingBottom: bottomPad + 100 },
       ]}
     >
-      <Text style={[styles.title, { color: colors.primary }]}>Settings</Text>
+      <Text style={[styles.title, { color: colors.primary }]}>SETTINGS</Text>
 
-      <View
-        style={[
-          styles.profileCard,
-          { backgroundColor: colors.card, borderColor: colors.border },
-        ]}
-      >
-        <View
-          style={[
-            styles.profileAvatar,
-            { backgroundColor: colors.primary + "33" },
-          ]}
-        >
+      <View style={[styles.profileCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+        <View style={[styles.profileAvatar, { backgroundColor: colors.primary + "22", borderColor: colors.primary + "66" }]}>
           <Text style={[styles.profileInitials, { color: colors.primary }]}>
             {initials}
           </Text>
@@ -148,6 +120,10 @@ export default function Settings() {
           <Text style={[styles.profileEmail, { color: colors.mutedForeground }]}>
             {email}
           </Text>
+        </View>
+        <View style={[styles.levelBadge, { backgroundColor: colors.primary + "22", borderColor: colors.primary + "55" }]}>
+          <Feather name="zap" size={14} color={colors.primary} />
+          <Text style={[styles.levelText, { color: colors.primary }]}>LVL 1</Text>
         </View>
       </View>
 
@@ -178,7 +154,7 @@ export default function Settings() {
           <SettingsRow
             icon="shield"
             label="Dad Mode"
-            value="Track moments. Level up."
+            value="Track moments."
           />
         </View>
       </View>
@@ -193,6 +169,10 @@ export default function Settings() {
           />
         </View>
       </View>
+
+      <Text style={[styles.footer, { color: colors.mutedForeground }]}>
+        Built for dads who show up.
+      </Text>
     </ScrollView>
   );
 }
@@ -203,75 +183,89 @@ const styles = StyleSheet.create({
     gap: 24,
   },
   title: {
-    fontSize: 26,
-    fontFamily: "Inter_700Bold",
-    letterSpacing: 2,
+    fontSize: 20,
+    fontFamily: FONTS.title,
+    letterSpacing: 3,
+    textShadowColor: "rgba(232,160,69,0.4)",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
   },
   profileCard: {
     flexDirection: "row",
     alignItems: "center",
     gap: 14,
-    borderRadius: 14,
-    borderWidth: 1,
+    borderRadius: 2,
+    borderWidth: 2,
     padding: 16,
   },
   profileAvatar: {
     width: 56,
     height: 56,
-    borderRadius: 28,
+    borderRadius: 2,
+    borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
+    flexShrink: 0,
   },
   profileInitials: {
-    fontSize: 24,
-    fontFamily: "Inter_700Bold",
+    fontSize: 22,
+    fontFamily: FONTS.title,
   },
   profileInfo: {
     flex: 1,
-    gap: 3,
+    gap: 4,
   },
   profileName: {
-    fontSize: 17,
-    fontFamily: "Inter_600SemiBold",
+    fontSize: 18,
+    fontFamily: FONTS.pixel,
   },
   profileEmail: {
+    fontSize: 14,
+    fontFamily: FONTS.pixel,
+  },
+  levelBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 2,
+    borderWidth: 2,
+  },
+  levelText: {
     fontSize: 13,
-    fontFamily: "Inter_400Regular",
+    fontFamily: FONTS.pixel,
+    letterSpacing: 1,
   },
-  section: {
-    gap: 8,
-  },
+  section: { gap: 8 },
   sectionLabel: {
-    fontSize: 11,
-    fontFamily: "Inter_600SemiBold",
-    letterSpacing: 1.5,
+    fontSize: 12,
+    fontFamily: FONTS.pixel,
+    letterSpacing: 2,
     paddingHorizontal: 4,
   },
-  sectionRows: {
-    borderRadius: 12,
-    overflow: "hidden",
-    gap: 1,
-  },
+  sectionRows: { gap: 8 },
   row: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
     padding: 14,
-    borderWidth: 1,
-    borderRadius: 12,
+    borderWidth: 2,
+    borderRadius: 2,
   },
   rowIcon: {
     width: 36,
     height: 36,
-    borderRadius: 10,
+    borderRadius: 2,
+    borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
   },
   rowLabel: {
     flex: 1,
-    fontSize: 15,
-    fontFamily: "Inter_500Medium",
+    fontSize: 17,
+    fontFamily: FONTS.pixel,
   },
   rowRight: {
     flexDirection: "row",
@@ -279,7 +273,13 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   rowValue: {
-    fontSize: 13,
-    fontFamily: "Inter_400Regular",
+    fontSize: 14,
+    fontFamily: FONTS.pixel,
+  },
+  footer: {
+    fontSize: 15,
+    fontFamily: FONTS.pixel,
+    textAlign: "center",
+    marginTop: 8,
   },
 });

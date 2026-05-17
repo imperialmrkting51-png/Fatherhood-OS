@@ -11,7 +11,6 @@ import {
   Platform,
   Pressable,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -26,6 +25,7 @@ import {
 } from "@workspace/api-client-react";
 import type { Child } from "@workspace/api-client-react";
 import { useColors } from "@/hooks/useColors";
+import { FONTS } from "@/constants/fonts";
 
 const AVATAR_COLORS = [
   "#e8a045",
@@ -43,10 +43,7 @@ function ageString(birthdate: string): string {
   const now = new Date();
   let years = now.getFullYear() - birth.getFullYear();
   let months = now.getMonth() - birth.getMonth();
-  if (months < 0) {
-    years--;
-    months += 12;
-  }
+  if (months < 0) { years--; months += 12; }
   if (years === 0) return `${months} mo`;
   if (months === 0) return `${years} yr`;
   return `${years}y ${months}mo`;
@@ -63,6 +60,9 @@ function ChildListItem({
 }) {
   const colors = useColors();
   const age = ageString(child.birthdate);
+  const avatarColor = AVATAR_COLORS.includes(child.avatarColor)
+    ? child.avatarColor
+    : AVATAR_COLORS[0];
 
   return (
     <Pressable
@@ -70,19 +70,15 @@ function ChildListItem({
         styles.childItem,
         {
           backgroundColor: colors.card,
-          borderColor: colors.border,
+          borderColor: avatarColor + "66",
           opacity: pressed ? 0.85 : 1,
         },
       ]}
       onPress={onPress}
+      onLongPress={onDelete}
     >
-      <View
-        style={[
-          styles.avatarCircle,
-          { backgroundColor: child.avatarColor + "33" },
-        ]}
-      >
-        <Text style={[styles.avatarText, { color: child.avatarColor }]}>
+      <View style={[styles.avatarSquare, { backgroundColor: avatarColor + "22", borderColor: avatarColor + "88" }]}>
+        <Text style={[styles.avatarText, { color: avatarColor }]}>
           {child.name.charAt(0).toUpperCase()}
         </Text>
       </View>
@@ -94,17 +90,12 @@ function ChildListItem({
           {age} old
         </Text>
         {child.notes ? (
-          <Text
-            style={[styles.childNotes, { color: colors.mutedForeground }]}
-            numberOfLines={1}
-          >
+          <Text style={[styles.childNotes, { color: colors.mutedForeground }]} numberOfLines={1}>
             {child.notes}
           </Text>
         ) : null}
       </View>
-      <View style={styles.childActions}>
-        <Feather name="chevron-right" size={18} color={colors.mutedForeground} />
-      </View>
+      <Feather name="chevron-right" size={18} color={colors.mutedForeground} />
     </Pressable>
   );
 }
@@ -125,14 +116,12 @@ export default function Kids() {
   const [saving, setSaving] = useState(false);
   const [colorIdx, setColorIdx] = useState(0);
 
-  const topPad = Platform.OS === "web" ? 67 : insets.top;
+  const topPad = Platform.OS === "web" ? 20 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
   const openAdd = async () => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setName("");
-    setBirthdate("");
-    setNotes("");
+    if (Platform.OS !== "web") await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setName(""); setBirthdate(""); setNotes("");
     setColorIdx(Math.floor(Math.random() * AVATAR_COLORS.length));
     setShowAddModal(true);
   };
@@ -149,10 +138,10 @@ export default function Kids() {
           notes: notes.trim() || undefined,
         },
       });
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      if (Platform.OS !== "web") await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setShowAddModal(false);
       refetch();
-    } catch (e) {
+    } catch {
       Alert.alert("Error", "Could not add kid. Check the birthdate format (YYYY-MM-DD).");
     } finally {
       setSaving(false);
@@ -168,10 +157,7 @@ export default function Kids() {
         {
           text: "Delete",
           style: "destructive",
-          onPress: async () => {
-            await deleteChild({ id: child.id });
-            refetch();
-          },
+          onPress: async () => { await deleteChild({ id: child.id }); refetch(); },
         },
       ]
     );
@@ -182,49 +168,46 @@ export default function Kids() {
       <View
         style={[
           styles.topBar,
-          {
-            paddingTop: topPad + 16,
-            borderBottomColor: colors.border,
-            backgroundColor: colors.background,
-          },
+          { paddingTop: topPad + 16, borderBottomColor: colors.border, backgroundColor: colors.background },
         ]}
       >
-        <Text style={[styles.pageTitle, { color: colors.primary }]}>Kids</Text>
+        <Text style={[styles.pageTitle, { color: colors.primary }]}>KIDS</Text>
         <Pressable
-          style={[styles.addBtn, { backgroundColor: colors.primary }]}
+          style={({ pressed }) => [
+            styles.addBtn,
+            { backgroundColor: colors.primary, opacity: pressed ? 0.8 : 1 },
+          ]}
           onPress={openAdd}
         >
-          <Feather name="plus" size={18} color={colors.primaryForeground} />
+          <Feather name="plus" size={20} color={colors.primaryForeground} />
         </Pressable>
       </View>
 
       {isLoading ? (
-        <View style={styles.loading}>
-          <ActivityIndicator color={colors.primary} />
+        <View style={styles.center}>
+          <ActivityIndicator color={colors.primary} size="large" />
         </View>
       ) : !children?.length ? (
         <View style={styles.empty}>
-          <View
-            style={[styles.emptyIcon, { backgroundColor: colors.secondary }]}
-          >
-            <Feather name="users" size={32} color={colors.primary} />
+          <View style={[styles.emptyIconBox, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <Feather name="users" size={36} color={colors.primary} />
           </View>
           <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
-            No kids yet
+            NO KIDS YET
           </Text>
-          <Text
-            style={[styles.emptySubtitle, { color: colors.mutedForeground }]}
-          >
-            Add a kid to start tracking activities, memories, and growth.
+          <Text style={[styles.emptySubtitle, { color: colors.mutedForeground }]}>
+            Add a kid to start tracking activities, memories and growth.
           </Text>
           <Pressable
-            style={[styles.emptyAddBtn, { backgroundColor: colors.primary }]}
+            style={({ pressed }) => [
+              styles.emptyAddBtn,
+              { backgroundColor: colors.primary, opacity: pressed ? 0.8 : 1 },
+            ]}
             onPress={openAdd}
           >
-            <Text
-              style={[styles.emptyAddBtnText, { color: colors.primaryForeground }]}
-            >
-              Add first kid
+            <Feather name="plus" size={16} color={colors.primaryForeground} />
+            <Text style={[styles.emptyAddBtnText, { color: colors.primaryForeground }]}>
+              ADD FIRST KID
             </Text>
           </Pressable>
         </View>
@@ -232,16 +215,9 @@ export default function Kids() {
         <FlatList
           data={children}
           keyExtractor={(item) => String(item.id)}
-          contentContainerStyle={[
-            styles.list,
-            { paddingBottom: bottomPad + 100 },
-          ]}
+          contentContainerStyle={[styles.list, { paddingBottom: bottomPad + 100 }]}
           refreshControl={
-            <RefreshControl
-              refreshing={isLoading}
-              onRefresh={refetch}
-              tintColor={colors.primary}
-            />
+            <RefreshControl refreshing={isLoading} onRefresh={refetch} tintColor={colors.primary} />
           }
           renderItem={({ item }) => (
             <ChildListItem
@@ -262,28 +238,12 @@ export default function Kids() {
         <TouchableWithoutFeedback onPress={() => setShowAddModal(false)}>
           <View style={styles.modalOverlay}>
             <TouchableWithoutFeedback>
-              <KeyboardAvoidingView
-                behavior={Platform.OS === "ios" ? "padding" : undefined}
-              >
-                <View
-                  style={[
-                    styles.modalSheet,
-                    { backgroundColor: colors.card, borderColor: colors.border },
-                  ]}
-                >
-                  <View style={styles.modalHandle}>
-                    <View
-                      style={[
-                        styles.handleBar,
-                        { backgroundColor: colors.border },
-                      ]}
-                    />
-                  </View>
+              <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined}>
+                <View style={[styles.modalSheet, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                  <View style={[styles.modalHandleBar, { backgroundColor: colors.border }]} />
 
-                  <Text
-                    style={[styles.modalTitle, { color: colors.foreground }]}
-                  >
-                    Add a kid
+                  <Text style={[styles.modalTitle, { color: colors.primary }]}>
+                    ADD A KID
                   </Text>
 
                   <View style={styles.colorRow}>
@@ -292,80 +252,55 @@ export default function Kids() {
                         key={c}
                         style={[
                           styles.colorDot,
-                          { backgroundColor: c + "44" },
-                          i === colorIdx && {
-                            borderWidth: 2,
-                            borderColor: c,
-                          },
+                          { backgroundColor: c + "33" },
+                          i === colorIdx && { borderWidth: 2, borderColor: c },
                         ]}
                         onPress={() => setColorIdx(i)}
                       >
-                        <View
-                          style={[
-                            styles.colorDotInner,
-                            { backgroundColor: c },
-                          ]}
-                        />
+                        <View style={[styles.colorDotInner, { backgroundColor: c }]} />
                       </Pressable>
                     ))}
                   </View>
 
                   <View style={styles.modalForm}>
-                    <TextInput
-                      style={[
-                        styles.modalInput,
-                        {
-                          backgroundColor: colors.background,
-                          borderColor: colors.border,
-                          color: colors.foreground,
-                        },
-                      ]}
-                      placeholder="Name"
-                      placeholderTextColor={colors.mutedForeground}
-                      value={name}
-                      onChangeText={setName}
-                      autoFocus
-                    />
-                    <TextInput
-                      style={[
-                        styles.modalInput,
-                        {
-                          backgroundColor: colors.background,
-                          borderColor: colors.border,
-                          color: colors.foreground,
-                        },
-                      ]}
-                      placeholder="Birthdate (YYYY-MM-DD)"
-                      placeholderTextColor={colors.mutedForeground}
-                      value={birthdate}
-                      onChangeText={setBirthdate}
-                      keyboardType="numbers-and-punctuation"
-                    />
-                    <TextInput
-                      style={[
-                        styles.modalInput,
-                        {
-                          backgroundColor: colors.background,
-                          borderColor: colors.border,
-                          color: colors.foreground,
-                        },
-                      ]}
-                      placeholder="Notes (optional)"
-                      placeholderTextColor={colors.mutedForeground}
-                      value={notes}
-                      onChangeText={setNotes}
-                    />
+                    <View style={styles.fieldGroup}>
+                      <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>NAME</Text>
+                      <TextInput
+                        style={[styles.modalInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground, fontFamily: FONTS.pixel }]}
+                        placeholder="Your kid's name"
+                        placeholderTextColor={colors.mutedForeground}
+                        value={name}
+                        onChangeText={setName}
+                        autoFocus
+                      />
+                    </View>
+                    <View style={styles.fieldGroup}>
+                      <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>BIRTHDATE</Text>
+                      <TextInput
+                        style={[styles.modalInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground, fontFamily: FONTS.pixel }]}
+                        placeholder="YYYY-MM-DD"
+                        placeholderTextColor={colors.mutedForeground}
+                        value={birthdate}
+                        onChangeText={setBirthdate}
+                        keyboardType="numbers-and-punctuation"
+                      />
+                    </View>
+                    <View style={styles.fieldGroup}>
+                      <Text style={[styles.fieldLabel, { color: colors.mutedForeground }]}>NOTES (OPTIONAL)</Text>
+                      <TextInput
+                        style={[styles.modalInput, { backgroundColor: colors.background, borderColor: colors.border, color: colors.foreground, fontFamily: FONTS.pixel }]}
+                        placeholder="Any notes..."
+                        placeholderTextColor={colors.mutedForeground}
+                        value={notes}
+                        onChangeText={setNotes}
+                      />
+                    </View>
                   </View>
 
                   <Pressable
                     style={[
                       styles.modalSaveBtn,
-                      {
-                        backgroundColor:
-                          !name.trim() || !birthdate.trim() || saving
-                            ? colors.muted
-                            : colors.primary,
-                      },
+                      { backgroundColor: !name.trim() || !birthdate.trim() || saving ? colors.muted : colors.primary },
                     ]}
                     onPress={handleAdd}
                     disabled={!name.trim() || !birthdate.trim() || saving}
@@ -373,13 +308,8 @@ export default function Kids() {
                     {saving ? (
                       <ActivityIndicator color={colors.primaryForeground} />
                     ) : (
-                      <Text
-                        style={[
-                          styles.modalSaveBtnText,
-                          { color: colors.primaryForeground },
-                        ]}
-                      >
-                        Add Kid
+                      <Text style={[styles.modalSaveBtnText, { color: colors.primaryForeground }]}>
+                        SAVE KID
                       </Text>
                     )}
                   </Pressable>
@@ -401,59 +331,65 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
     paddingBottom: 16,
-    borderBottomWidth: 1,
+    borderBottomWidth: 2,
   },
   pageTitle: {
-    fontSize: 26,
-    fontFamily: "Inter_700Bold",
-    letterSpacing: 2,
+    fontSize: 20,
+    fontFamily: FONTS.title,
+    letterSpacing: 3,
+    textShadowColor: "rgba(232,160,69,0.4)",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
   },
   addBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 38,
+    height: 38,
+    borderRadius: 2,
     alignItems: "center",
     justifyContent: "center",
   },
-  loading: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  center: { flex: 1, alignItems: "center", justifyContent: "center" },
   empty: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 40,
-    gap: 12,
+    gap: 14,
   },
-  emptyIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: 20,
+  emptyIconBox: {
+    width: 80,
+    height: 80,
+    borderRadius: 2,
+    borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 8,
+    marginBottom: 6,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontFamily: "Inter_600SemiBold",
+    fontSize: 16,
+    fontFamily: FONTS.title,
+    letterSpacing: 2,
+    textAlign: "center",
   },
   emptySubtitle: {
-    fontSize: 14,
-    fontFamily: "Inter_400Regular",
+    fontSize: 17,
+    fontFamily: FONTS.pixel,
     textAlign: "center",
-    lineHeight: 21,
+    lineHeight: 24,
   },
   emptyAddBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
     paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: 13,
+    borderRadius: 2,
     marginTop: 8,
   },
   emptyAddBtnText: {
     fontSize: 15,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: FONTS.pixel,
+    letterSpacing: 1,
   },
   list: {
     paddingHorizontal: 16,
@@ -465,102 +401,95 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 14,
     padding: 14,
-    borderRadius: 12,
-    borderWidth: 1,
+    borderRadius: 2,
+    borderWidth: 2,
   },
-  avatarCircle: {
+  avatarSquare: {
     width: 52,
     height: 52,
-    borderRadius: 26,
+    borderRadius: 2,
+    borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
   },
   avatarText: {
-    fontSize: 24,
-    fontFamily: "Inter_700Bold",
+    fontSize: 22,
+    fontFamily: FONTS.title,
   },
-  childInfo: {
-    flex: 1,
-    gap: 2,
-  },
-  childName: {
-    fontSize: 16,
-    fontFamily: "Inter_600SemiBold",
-  },
-  childAge: {
-    fontSize: 13,
-    fontFamily: "Inter_400Regular",
-  },
-  childNotes: {
-    fontSize: 12,
-    fontFamily: "Inter_400Regular",
-  },
-  childActions: {
-    flexShrink: 0,
-  },
+  childInfo: { flex: 1, gap: 3 },
+  childName: { fontSize: 17, fontFamily: FONTS.pixel },
+  childAge: { fontSize: 15, fontFamily: FONTS.pixel },
+  childNotes: { fontSize: 14, fontFamily: FONTS.pixel },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.6)",
+    backgroundColor: "rgba(0,0,0,0.7)",
     justifyContent: "flex-end",
   },
   modalSheet: {
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    borderWidth: 1,
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderRightWidth: 2,
+    borderTopLeftRadius: 2,
+    borderTopRightRadius: 2,
     padding: 24,
     paddingBottom: 40,
-    gap: 16,
-  },
-  modalHandle: {
+    gap: 18,
     alignItems: "center",
+  },
+  modalHandleBar: {
+    width: 40,
+    height: 3,
+    borderRadius: 2,
     marginBottom: 4,
   },
-  handleBar: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-  },
   modalTitle: {
-    fontSize: 20,
-    fontFamily: "Inter_700Bold",
+    fontSize: 18,
+    fontFamily: FONTS.title,
+    letterSpacing: 2,
+    textShadowColor: "rgba(232,160,69,0.4)",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 8,
+    alignSelf: "flex-start",
   },
   colorRow: {
     flexDirection: "row",
     gap: 10,
     flexWrap: "wrap",
+    alignSelf: "flex-start",
   },
   colorDot: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: 2,
     alignItems: "center",
     justifyContent: "center",
   },
   colorDotInner: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 18,
+    height: 18,
+    borderRadius: 1,
   },
-  modalForm: {
-    gap: 10,
-  },
+  modalForm: { gap: 12, width: "100%" },
+  fieldGroup: { gap: 5 },
+  fieldLabel: { fontSize: 13, fontFamily: FONTS.pixel, letterSpacing: 1 },
   modalInput: {
-    borderWidth: 1,
-    borderRadius: 8,
+    borderWidth: 2,
+    borderRadius: 2,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    fontSize: 15,
-    fontFamily: "Inter_400Regular",
+    fontSize: 18,
+    width: "100%",
   },
   modalSaveBtn: {
-    borderRadius: 8,
+    borderRadius: 2,
     paddingVertical: 14,
     alignItems: "center",
-    marginTop: 4,
+    width: "100%",
   },
   modalSaveBtnText: {
     fontSize: 16,
-    fontFamily: "Inter_600SemiBold",
+    fontFamily: FONTS.pixel,
+    letterSpacing: 2,
   },
 });

@@ -1,5 +1,4 @@
 import { useAuth } from "@clerk/expo";
-import { BlurView } from "expo-blur";
 import { Redirect, Tabs } from "expo-router";
 import { Feather } from "@expo/vector-icons";
 import React from "react";
@@ -8,7 +7,6 @@ import {
   Platform,
   StyleSheet,
   View,
-  useColorScheme,
 } from "react-native";
 import { useColors } from "@/hooks/useColors";
 import { FONTS } from "@/constants/fonts";
@@ -25,10 +23,6 @@ function LoadingScreen() {
 export default function TabLayout() {
   const { isSignedIn, isLoaded } = useAuth();
   const colors = useColors();
-  const colorScheme = useColorScheme();
-  const isDark = colorScheme === "dark";
-  const isIOS = Platform.OS === "ios";
-  const isWeb = Platform.OS === "web";
 
   if (!isLoaded) return <LoadingScreen />;
   if (!isSignedIn) return <Redirect href="/sign-in" />;
@@ -40,33 +34,27 @@ export default function TabLayout() {
         tabBarInactiveTintColor: colors.mutedForeground,
         tabBarLabelStyle: {
           fontFamily: FONTS.pixel,
-          fontSize: 12,
+          fontSize: 13,
+          marginBottom: Platform.OS === "ios" ? 0 : 4,
         },
         headerShown: false,
         tabBarStyle: {
-          position: "absolute",
-          backgroundColor: isIOS ? "transparent" : colors.background,
+          backgroundColor: colors.background,
           borderTopWidth: 2,
           borderTopColor: colors.border,
           elevation: 0,
-          ...(isWeb ? { height: 64 } : {}),
+          height: Platform.OS === "ios" ? 84 : 64,
+          paddingTop: 8,
         },
-        tabBarBackground: () =>
-          isIOS ? (
-            <BlurView
-              intensity={100}
-              tint={isDark ? "dark" : "systemChromeMaterialDark"}
-              style={StyleSheet.absoluteFill}
-            />
-          ) : null,
+        tabBarBackground: undefined,
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color }) => (
-            <Feather name="home" size={22} color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="home" size={size} color={color} />
           ),
         }}
       />
@@ -74,8 +62,8 @@ export default function TabLayout() {
         name="kids"
         options={{
           title: "Kids",
-          tabBarIcon: ({ color }) => (
-            <Feather name="users" size={22} color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="users" size={size} color={color} />
           ),
         }}
       />
@@ -83,8 +71,8 @@ export default function TabLayout() {
         name="starters"
         options={{
           title: "Starters",
-          tabBarIcon: ({ color }) => (
-            <Feather name="message-circle" size={22} color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="message-circle" size={size} color={color} />
           ),
         }}
       />
@@ -92,8 +80,8 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: "Settings",
-          tabBarIcon: ({ color }) => (
-            <Feather name="settings" size={22} color={color} />
+          tabBarIcon: ({ color, size }) => (
+            <Feather name="settings" size={size} color={color} />
           ),
         }}
       />
