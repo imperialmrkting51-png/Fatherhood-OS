@@ -1,19 +1,22 @@
 import { Link, useLocation } from "wouter";
-import { BookHeart, Compass, Home, Plus, Users, Menu, Gamepad2, Trophy, Settings, MessageCircleQuestion } from "lucide-react";
+import { Home, Users, Menu, Gamepad2, Trophy, Settings, MessageCircleQuestion, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 import { useGameState } from "@/hooks/use-game-state";
 import { Progress } from "@/components/ui/progress";
+import { useClerk } from "@clerk/react";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { gameState } = useGameState();
+  const { signOut } = useClerk();
+  const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
   const navItems = [
-    { label: "Dashboard", href: "/", icon: Home },
+    { label: "Dashboard", href: "/dashboard", icon: Home },
     { label: "Party", href: "/party", icon: Users },
     { label: "Starters", href: "/starters", icon: MessageCircleQuestion },
     { label: "Games", href: "/games", icon: Gamepad2 },
@@ -84,7 +87,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
              })}
           </nav>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <div className="hidden sm:flex items-center gap-2 bg-secondary/50 px-3 py-1.5 rounded-none border border-primary neon-border">
               <Trophy className="w-4 h-4 text-accent" />
               <span className="text-sm font-sans text-xl">{gameState.streak}-day streak</span>
@@ -92,6 +95,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2 bg-primary text-primary-foreground px-3 py-1.5 rounded-none font-serif text-xs">
               Lvl {gameState.level}
             </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => signOut({ redirectUrl: basePath || "/" })}
+              title="Sign out"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <LogOut className="w-4 h-4" />
+            </Button>
           </div>
         </div>
         <div className="w-full bg-secondary border-t border-primary neon-border py-2 px-4 md:px-8">

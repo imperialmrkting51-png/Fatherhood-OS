@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db, childrenTable } from "@workspace/db";
 import {
   GetChildParams,
@@ -25,7 +25,11 @@ const serialize = (c: DbChild) => ({
 });
 
 router.get("/children", async (req, res): Promise<void> => {
-  const children = await db.select().from(childrenTable).orderBy(childrenTable.createdAt);
+  const children = await db
+    .select()
+    .from(childrenTable)
+    .where(eq(childrenTable.userId, req.userId!))
+    .orderBy(childrenTable.createdAt);
   res.json(ListChildrenResponse.parse(children.map(serialize)));
 });
 
@@ -35,7 +39,10 @@ router.post("/children", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [child] = await db.insert(childrenTable).values(parsed.data).returning();
+  const [child] = await db
+    .insert(childrenTable)
+    .values({ ...parsed.data, userId: req.userId! })
+    .returning();
   res.status(201).json(GetChildResponse.parse(serialize(child)));
 });
 
@@ -45,7 +52,10 @@ router.get("/children/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [child] = await db.select().from(childrenTable).where(eq(childrenTable.id, params.data.id));
+  const [child] = await db
+    .select()
+    .from(childrenTable)
+    .where(and(eq(childrenTable.id, params.data.id), eq(childrenTable.userId, req.userId!)));
   if (!child) {
     res.status(404).json({ error: "Child not found" });
     return;
@@ -67,7 +77,7 @@ router.patch("/children/:id", async (req, res): Promise<void> => {
   const [child] = await db
     .update(childrenTable)
     .set(parsed.data)
-    .where(eq(childrenTable.id, params.data.id))
+    .where(and(eq(childrenTable.id, params.data.id), eq(childrenTable.userId, req.userId!)))
     .returning();
   if (!child) {
     res.status(404).json({ error: "Child not found" });
@@ -82,7 +92,10 @@ router.delete("/children/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [child] = await db.delete(childrenTable).where(eq(childrenTable.id, params.data.id)).returning();
+  const [child] = await db
+    .delete(childrenTable)
+    .where(and(eq(childrenTable.id, params.data.id), eq(childrenTable.userId, req.userId!)))
+    .returning();
   if (!child) {
     res.status(404).json({ error: "Child not found" });
     return;
@@ -96,7 +109,10 @@ router.get("/children/:id/guidance", async (req, res): Promise<void> => {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [child] = await db.select().from(childrenTable).where(eq(childrenTable.id, params.data.id));
+  const [child] = await db
+    .select()
+    .from(childrenTable)
+    .where(and(eq(childrenTable.id, params.data.id), eq(childrenTable.userId, req.userId!)));
   if (!child) {
     res.status(404).json({ error: "Child not found" });
     return;

@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db, activitiesTable, childrenTable } from "@workspace/db";
 import {
   ListChildActivitiesParams,
@@ -27,7 +27,10 @@ router.get("/children/:id/activities", async (req, res): Promise<void> => {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [child] = await db.select().from(childrenTable).where(eq(childrenTable.id, params.data.id));
+  const [child] = await db
+    .select()
+    .from(childrenTable)
+    .where(and(eq(childrenTable.id, params.data.id), eq(childrenTable.userId, req.userId!)));
   if (!child) {
     res.status(404).json({ error: "Child not found" });
     return;
@@ -51,7 +54,10 @@ router.post("/children/:id/activities", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [child] = await db.select().from(childrenTable).where(eq(childrenTable.id, params.data.id));
+  const [child] = await db
+    .select()
+    .from(childrenTable)
+    .where(and(eq(childrenTable.id, params.data.id), eq(childrenTable.userId, req.userId!)));
   if (!child) {
     res.status(404).json({ error: "Child not found" });
     return;
@@ -74,15 +80,27 @@ router.patch("/activities/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
+  const [existing] = await db
+    .select()
+    .from(activitiesTable)
+    .where(eq(activitiesTable.id, params.data.id));
+  if (!existing) {
+    res.status(404).json({ error: "Activity not found" });
+    return;
+  }
+  const [childOwner] = await db
+    .select()
+    .from(childrenTable)
+    .where(and(eq(childrenTable.id, existing.childId), eq(childrenTable.userId, req.userId!)));
+  if (!childOwner) {
+    res.status(404).json({ error: "Activity not found" });
+    return;
+  }
   const [activity] = await db
     .update(activitiesTable)
     .set(parsed.data)
     .where(eq(activitiesTable.id, params.data.id))
     .returning();
-  if (!activity) {
-    res.status(404).json({ error: "Activity not found" });
-    return;
-  }
   res.json(UpdateActivityResponse.parse(serialize(activity)));
 });
 
@@ -92,14 +110,23 @@ router.delete("/activities/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [activity] = await db
-    .delete(activitiesTable)
-    .where(eq(activitiesTable.id, params.data.id))
-    .returning();
-  if (!activity) {
+  const [existing] = await db
+    .select()
+    .from(activitiesTable)
+    .where(eq(activitiesTable.id, params.data.id));
+  if (!existing) {
     res.status(404).json({ error: "Activity not found" });
     return;
   }
+  const [childOwner] = await db
+    .select()
+    .from(childrenTable)
+    .where(and(eq(childrenTable.id, existing.childId), eq(childrenTable.userId, req.userId!)));
+  if (!childOwner) {
+    res.status(404).json({ error: "Activity not found" });
+    return;
+  }
+  await db.delete(activitiesTable).where(eq(activitiesTable.id, params.data.id));
   res.sendStatus(204);
 });
 

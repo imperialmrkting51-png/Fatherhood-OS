@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, desc } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { db, memoriesTable, childrenTable } from "@workspace/db";
 import {
   ListChildMemoriesParams,
@@ -29,7 +29,10 @@ router.get("/children/:id/memories", async (req, res): Promise<void> => {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [child] = await db.select().from(childrenTable).where(eq(childrenTable.id, params.data.id));
+  const [child] = await db
+    .select()
+    .from(childrenTable)
+    .where(and(eq(childrenTable.id, params.data.id), eq(childrenTable.userId, req.userId!)));
   if (!child) {
     res.status(404).json({ error: "Child not found" });
     return;
@@ -53,7 +56,10 @@ router.post("/children/:id/memories", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
-  const [child] = await db.select().from(childrenTable).where(eq(childrenTable.id, params.data.id));
+  const [child] = await db
+    .select()
+    .from(childrenTable)
+    .where(and(eq(childrenTable.id, params.data.id), eq(childrenTable.userId, req.userId!)));
   if (!child) {
     res.status(404).json({ error: "Child not found" });
     return;
@@ -76,6 +82,14 @@ router.get("/memories/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Memory not found" });
     return;
   }
+  const [child] = await db
+    .select()
+    .from(childrenTable)
+    .where(and(eq(childrenTable.id, memory.childId), eq(childrenTable.userId, req.userId!)));
+  if (!child) {
+    res.status(404).json({ error: "Memory not found" });
+    return;
+  }
   res.json(GetMemoryResponse.parse(serialize(memory)));
 });
 
@@ -90,15 +104,24 @@ router.patch("/memories/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: parsed.error.message });
     return;
   }
+  const [existing] = await db.select().from(memoriesTable).where(eq(memoriesTable.id, params.data.id));
+  if (!existing) {
+    res.status(404).json({ error: "Memory not found" });
+    return;
+  }
+  const [child] = await db
+    .select()
+    .from(childrenTable)
+    .where(and(eq(childrenTable.id, existing.childId), eq(childrenTable.userId, req.userId!)));
+  if (!child) {
+    res.status(404).json({ error: "Memory not found" });
+    return;
+  }
   const [memory] = await db
     .update(memoriesTable)
     .set(parsed.data)
     .where(eq(memoriesTable.id, params.data.id))
     .returning();
-  if (!memory) {
-    res.status(404).json({ error: "Memory not found" });
-    return;
-  }
   res.json(UpdateMemoryResponse.parse(serialize(memory)));
 });
 
@@ -108,14 +131,20 @@ router.delete("/memories/:id", async (req, res): Promise<void> => {
     res.status(400).json({ error: params.error.message });
     return;
   }
-  const [memory] = await db
-    .delete(memoriesTable)
-    .where(eq(memoriesTable.id, params.data.id))
-    .returning();
-  if (!memory) {
+  const [existing] = await db.select().from(memoriesTable).where(eq(memoriesTable.id, params.data.id));
+  if (!existing) {
     res.status(404).json({ error: "Memory not found" });
     return;
   }
+  const [child] = await db
+    .select()
+    .from(childrenTable)
+    .where(and(eq(childrenTable.id, existing.childId), eq(childrenTable.userId, req.userId!)));
+  if (!child) {
+    res.status(404).json({ error: "Memory not found" });
+    return;
+  }
+  await db.delete(memoriesTable).where(eq(memoriesTable.id, params.data.id));
   res.sendStatus(204);
 });
 
