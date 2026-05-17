@@ -13,7 +13,7 @@ import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect, useState } from "react";
 import { Platform, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { KeyboardProvider } from "react-native-keyboard-controller";
+
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -96,10 +96,8 @@ export default function RootLayout() {
         <SafeAreaProvider>
           <QueryClientProvider client={queryClient}>
             <GestureHandlerRootView style={{ flex: 1, backgroundColor: BG }}>
-              <KeyboardProvider>
                 <AuthSync />
                 <RootLayoutNav />
-              </KeyboardProvider>
             </GestureHandlerRootView>
           </QueryClientProvider>
         </SafeAreaProvider>
