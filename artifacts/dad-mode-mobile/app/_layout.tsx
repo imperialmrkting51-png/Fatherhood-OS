@@ -28,6 +28,13 @@ const FONT_TIMEOUT_MS = 6000;
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
 
+// Route Clerk API calls through the same proxy as the dad-os web app so that
+// the Clerk dev-instance domain restriction doesn't block the mobile web build.
+const clerkProxyUrl =
+  typeof window !== "undefined"
+    ? `${window.location.origin}/api/__clerk`
+    : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}/api/__clerk`;
+
 const tokenCache =
   Platform.OS !== "web"
     ? {
@@ -96,7 +103,7 @@ export default function RootLayout() {
 
   return (
     <ErrorBoundary>
-      <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+      <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache} proxyUrl={clerkProxyUrl}>
         <SafeAreaProvider>
           <QueryClientProvider client={queryClient}>
             <GestureHandlerRootView style={{ flex: 1, backgroundColor: BG }}>
