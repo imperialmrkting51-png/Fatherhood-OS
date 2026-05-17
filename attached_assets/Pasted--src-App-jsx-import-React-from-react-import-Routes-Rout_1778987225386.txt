@@ -1,0 +1,192 @@
+// src/App.jsx
+import React from "react";
+import { Routes, Route, NavLink, Outlet } from "react-router-dom";
+
+// ---- Simple placeholder pages (you can move these into /pages later) ----
+
+function Dashboard() {
+  return (
+    <div className="page">
+      <h1>Family Quest Log</h1>
+      <p>Welcome back, Trainer. Here are today’s quests for your family.</p>
+      <ul className="card-list">
+        <li className="card">
+          <h3>Daily Quest: Ask 3 Questions</h3>
+          <p>Connect with one child using today’s conversation prompts.</p>
+        </li>
+        <li className="card">
+          <h3>Training Session: Micro‑Activity</h3>
+          <p>Do a 5‑minute physical or creative activity together.</p>
+        </li>
+        <li className="card">
+          <h3>Growth Check: Milestone</h3>
+          <p>Notice one emotional, physical, or social milestone today.</p>
+        </li>
+      </ul>
+    </div>
+  );
+}
+
+function Kids() {
+  return (
+    <div className="page">
+      <h1>Your Party</h1>
+      <p>Manage your children’s profiles (alias‑first, real name optional).</p>
+      <div className="card-list">
+        <div className="card">
+          <h3>+ Add Child</h3>
+          <p>Create a new growth journey using an alias and emoji avatar.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Activities() {
+  return (
+    <div className="page">
+      <h1>Training Sessions</h1>
+      <p>Short, meaningful micro‑activities for emotional and physical growth.</p>
+    </div>
+  );
+}
+
+function Starters() {
+  return (
+    <div className="page">
+      <h1>Conversation Starters</h1>
+      <p>Fun prompts for deeper, playful talks with your kids.</p>
+    </div>
+  );
+}
+
+function Games() {
+  return (
+    <div className="page">
+      <h1>Mini‑Games</h1>
+      <p>20 Questions, I Spy, Would You Rather, and more.</p>
+    </div>
+  );
+}
+
+function Challenges() {
+  return (
+    <div className="page">
+      <h1>Family Challenges</h1>
+      <p>Weekly “gym battle” style challenges like LEGO forts and cook‑offs.</p>
+    </div>
+  );
+}
+
+function Settings() {
+  return (
+    <div className="page">
+      <h1>Settings</h1>
+      <p>Manage spouse invite, faith mode, privacy, and notification preferences.</p>
+
+      <section className="card">
+        <h3>Faith Mode</h3>
+        <p>
+          Optional, additive content based on your family’s faith tradition.
+          Core content stays the same.
+        </p>
+        <ul>
+          <li>None (default)</li>
+          <li>Christian</li>
+          <li>Muslim</li>
+          <li>Jewish</li>
+          <li>General Spiritual</li>
+        </ul>
+      </section>
+
+      <section className="card">
+        <h3>Spouse / Co‑Parent</h3>
+        <p>
+          Invite a spouse with a Family Key so both parents can see quests,
+          log answers, and compare notes.
+        </p>
+      </section>
+    </div>
+  );
+}
+
+// ---- Layout components ----
+
+function XPBar() {
+  // Later: wire this to real XP / streak state
+  return (
+    <div className="xp-bar">
+      <div className="xp-bar-fill" style={{ width: "45%" }} />
+      <span className="xp-label">Family XP: 45 / 100</span>
+    </div>
+  );
+}
+
+function Navbar() {
+  return (
+    <nav className="navbar">
+      <div className="navbar-left">
+        <span className="logo">Fatherhood OS</span>
+      </div>
+      <div className="navbar-center">
+        <NavLink to="/" end className="nav-link">
+          Dashboard
+        </NavLink>
+        <NavLink to="/kids" className="nav-link">
+          Kids
+        </NavLink>
+        <NavLink to="/activities" className="nav-link">
+          Activities
+        </NavLink>
+        <NavLink to="/starters" className="nav-link">
+          Starters
+        </NavLink>
+        <NavLink to="/games" className="nav-link">
+          Games
+        </NavLink>
+        <NavLink to="/challenges" className="nav-link">
+          Challenges
+        </NavLink>
+        <NavLink to="/settings" className="nav-link">
+          Settings
+        </NavLink>
+      </div>
+      <div className="navbar-right">
+        <div className="streak-pill">
+          🔥 7‑day streak
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+function AppLayout() {
+  return (
+    <div className="app-root">
+      <Navbar />
+      <XPBar />
+      <main className="app-main">
+        <Outlet />
+      </main>
+    </div>
+  );
+}
+
+// ---- Main App with routes ----
+
+export default function App() {
+  return (
+    <Routes>
+      <Route element={<AppLayout />}>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/kids" element={<Kids />} />
+        <Route path="/activities" element={<Activities />} />
+        <Route path="/starters" element={<Starters />} />
+        <Route path="/games" element={<Games />} />
+        <Route path="/challenges" element={<Challenges />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="*" element={<Dashboard />} />
+      </Route>
+    </Routes>
+  );
+}
