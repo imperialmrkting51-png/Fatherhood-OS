@@ -1,5 +1,10 @@
 uploads = []
-generated = []
+
+[[generated]]
+id = "KBfhZtME1Trb8KfzYKYbM"
+uri = "file://artifacts/dad-mode-mobile/assets/images/icon.png"
+type = "image"
+title = "dad mode app icon"
 
 [[outputs]]
 id = "Gk0AKGH7GdEoAz36Wg4FY"

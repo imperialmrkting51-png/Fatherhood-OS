@@ -1,0 +1,27 @@
+kind = "mobile"
+previewPath = "/mobile/"
+title = "Dad Mode Mobile"
+version = "1.0.0"
+id = "artifacts/dad-mode-mobile"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+name = "expo"
+paths = [ "/mobile/" ]
+localPort = 26039
+
+[services.development]
+run = "pnpm --filter @workspace/dad-mode-mobile run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/dad-mode-mobile", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/dad-mode-mobile", "run", "serve" ]
+
+[services.env]
+PORT = "26039"
+BASE_PATH = "/mobile/"
