@@ -38,11 +38,11 @@ export default function Challenges() {
     <Layout>
       <div className="p-6 md:p-10 max-w-5xl mx-auto space-y-10">
         <header className="text-center space-y-4 max-w-2xl mx-auto">
-          <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="w-20 h-20 bg-secondary border border-accent rounded-none flex items-center justify-center mx-auto mb-6">
             <Trophy className="w-10 h-10 text-accent" />
           </div>
-          <h1 className="text-5xl font-serif font-bold tracking-tight text-foreground">Gym Battles</h1>
-          <p className="text-muted-foreground text-xl font-medium">Major family challenges. Accept the quest, complete the battle, earn massive XP.</p>
+          <h1 className="text-2xl font-serif neon-text text-foreground">Boss Battles</h1>
+          <p className="text-muted-foreground font-sans text-2xl font-medium">Major family challenges. Accept the challenge, complete the battle, earn massive XP.</p>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -50,34 +50,34 @@ export default function Challenges() {
             const isCompleted = completed.includes(challenge.id);
             const isActive = activeChallenges.includes(challenge.id);
             
-            let difficultyColor = "bg-secondary text-secondary-foreground";
-            if (challenge.diff === "Medium") difficultyColor = "bg-primary/20 text-primary border-primary/30";
-            if (challenge.diff === "Hard") difficultyColor = "bg-destructive/10 text-destructive border-destructive/20";
+            let difficultyColor = "bg-secondary text-secondary-foreground border-foreground";
+            if (challenge.diff === "Medium") difficultyColor = "bg-primary text-primary-foreground border-primary";
+            if (challenge.diff === "Hard") difficultyColor = "bg-destructive text-destructive-foreground border-destructive";
 
             return (
               <Card 
                 key={challenge.id} 
-                className={`border-2 flex flex-col justify-between transition-all duration-300 ${isCompleted ? 'opacity-50 grayscale bg-secondary/20' : isActive ? 'border-accent shadow-md scale-[1.02]' : 'hover-elevate shadow-sm'}`}
+                className={`pixel-border bg-card flex flex-col justify-between transition-all duration-300 ${isCompleted ? 'opacity-50 grayscale bg-secondary' : isActive ? 'border-accent shadow-md scale-[1.02]' : 'hover-elevate shadow-sm'}`}
               >
                 <CardHeader className="pb-4">
                   <div className="flex justify-between items-start mb-2">
-                    <Badge variant="outline" className={difficultyColor}>{challenge.diff}</Badge>
-                    <Badge variant="secondary" className="bg-background"><Zap className="w-3 h-3 mr-1 text-accent"/> 20 XP</Badge>
+                    <Badge className={`rounded-none font-sans text-lg uppercase ${difficultyColor}`}>{challenge.diff}</Badge>
+                    <Badge variant="secondary" className="rounded-none font-sans text-lg bg-background border border-accent text-accent"><Zap className="w-3 h-3 mr-1 text-accent"/> 20 XP</Badge>
                   </div>
-                  <CardTitle className="text-2xl font-serif font-bold">{challenge.title}</CardTitle>
+                  <CardTitle className="text-sm font-serif neon-text text-foreground">{challenge.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6 flex-1 flex flex-col justify-between">
-                  <p className="text-foreground font-medium text-lg leading-relaxed">{challenge.desc}</p>
+                  <p className="text-foreground font-sans text-xl leading-relaxed">{challenge.desc}</p>
                   
                   <div className="pt-4">
                     {isCompleted ? (
-                      <Button variant="secondary" className="w-full font-bold" disabled>Completed</Button>
+                      <Button variant="secondary" className="w-full font-sans text-xl rounded-none border border-primary" disabled>Completed</Button>
                     ) : isActive ? (
-                      <Button onClick={() => complete(challenge.id)} className="w-full font-bold bg-accent hover:bg-accent/90 text-accent-foreground shadow-sm" data-testid={`btn-complete-${challenge.id}`}>
+                      <Button onClick={() => complete(challenge.id)} className="w-full font-sans text-xl rounded-none neon-glow bg-accent hover:bg-accent/90 text-accent-foreground shadow-sm border-none" data-testid={`btn-complete-${challenge.id}`}>
                         <Swords className="mr-2 h-5 w-5" /> Claim Victory!
                       </Button>
                     ) : (
-                      <Button onClick={() => accept(challenge.id)} variant="outline" className="w-full font-bold border-2 border-foreground/20 hover:border-foreground" data-testid={`btn-accept-${challenge.id}`}>
+                      <Button onClick={() => accept(challenge.id)} variant="outline" className="w-full font-sans text-xl rounded-none border-primary text-primary hover:bg-primary hover:text-primary-foreground" data-testid={`btn-accept-${challenge.id}`}>
                         Accept Challenge
                       </Button>
                     )}

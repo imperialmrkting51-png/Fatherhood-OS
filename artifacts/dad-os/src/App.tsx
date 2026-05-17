@@ -7,7 +7,7 @@ import NotFound from "@/pages/not-found";
 import Dashboard from "@/pages/dashboard";
 import PartyList from "@/pages/party/list";
 import PartyDetail from "@/pages/party/detail";
-import PartyTraining from "@/pages/party/training";
+import PartyActivities from "@/pages/party/activities";
 import PartyMemories from "@/pages/party/memories";
 import Starters from "@/pages/starters";
 import Games from "@/pages/games";
@@ -29,7 +29,7 @@ function Router() {
       <Route path="/" component={Dashboard} />
       <Route path="/party" component={PartyList} />
       <Route path="/party/:id" component={PartyDetail} />
-      <Route path="/party/:id/training" component={PartyTraining} />
+      <Route path="/party/:id/activities" component={PartyActivities} />
       <Route path="/party/:id/memories" component={PartyMemories} />
       <Route path="/starters" component={Starters} />
       <Route path="/games" component={Games} />

@@ -74,12 +74,12 @@ export default function Starters() {
       <div className="p-6 md:p-10 max-w-5xl mx-auto space-y-10">
         <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 text-center md:text-left">
           <div>
-            <h1 className="text-4xl font-serif font-bold tracking-tight text-foreground flex items-center justify-center md:justify-start gap-3">
+            <h1 className="text-xl md:text-2xl font-serif neon-text text-foreground flex items-center justify-center md:justify-start gap-3">
               <MessageCircleQuestion className="w-8 h-8 text-primary" /> Conversation Starters
             </h1>
-            <p className="text-muted-foreground mt-2 text-lg font-medium">Earn +5 XP for every question asked.</p>
+            <p className="text-muted-foreground mt-2 font-sans text-2xl font-medium">Earn +5 XP for every question asked.</p>
           </div>
-          <Button onClick={shuffle} size="lg" className="rounded-full font-bold shadow-sm" data-testid="btn-shuffle-starters">
+          <Button onClick={shuffle} size="lg" className="rounded-none font-sans text-xl shadow-sm neon-glow" data-testid="btn-shuffle-starters">
             <Shuffle className="mr-2 h-5 w-5" /> Shuffle Deck
           </Button>
         </header>
@@ -88,21 +88,21 @@ export default function Starters() {
           {activePrompts.map((prompt, i) => (
             <Card 
               key={i} 
-              className={`border-2 transition-all duration-300 ${prompt.used ? 'opacity-60 bg-secondary/30 scale-[0.98]' : 'hover-elevate cursor-pointer shadow-md border-primary/20 bg-card'}`}
+              className={`pixel-border bg-card transition-all duration-300 ${prompt.used ? 'opacity-60 bg-secondary scale-[0.98]' : 'hover-elevate cursor-pointer shadow-md'}`}
               onClick={() => markUsed(i)}
               data-testid={`starter-card-${i}`}
             >
               <CardContent className="p-8 flex flex-col items-center text-center justify-center min-h-[220px] relative">
-                <Badge variant="outline" className="absolute top-4 left-4 uppercase tracking-widest font-bold">
+                <Badge variant="outline" className="absolute top-4 left-4 uppercase font-sans text-lg rounded-none border-primary text-primary">
                   {prompt.category}
                 </Badge>
                 {prompt.used && (
-                  <Badge className="absolute top-4 right-4 bg-primary text-primary-foreground font-bold">
+                  <Badge className="absolute top-4 right-4 bg-primary text-primary-foreground font-sans text-lg rounded-none">
                     +5 XP Earned
                   </Badge>
                 )}
                 <Sparkles className={`w-8 h-8 mb-4 ${prompt.used ? 'text-muted-foreground' : 'text-accent'}`} />
-                <h3 className={`text-2xl font-serif font-bold leading-snug ${prompt.used ? 'text-muted-foreground' : 'text-foreground'}`}>
+                <h3 className={`text-2xl font-sans leading-snug ${prompt.used ? 'text-muted-foreground' : 'text-foreground'}`}>
                   "{prompt.text}"
                 </h3>
               </CardContent>

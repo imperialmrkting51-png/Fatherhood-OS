@@ -66,24 +66,24 @@ export default function PartyMemories() {
     <Layout>
       <div className="p-6 md:p-10 max-w-4xl mx-auto space-y-8">
         <header className="space-y-4">
-          <Link href={`/party/${id}`} className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground">
+          <Link href={`/party/${id}`} className="inline-flex items-center text-xl font-sans text-muted-foreground hover:text-primary">
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to {child?.name || 'Party Member'}
+            Back to {child?.name || 'Kid'}
           </Link>
           <div className="flex items-center justify-between">
-            <h1 className="text-4xl font-serif font-bold tracking-tight text-foreground flex items-center gap-3">
-              <BookHeart className="w-8 h-8 text-accent" /> Quest Log
+            <h1 className="text-xl md:text-2xl font-serif neon-text flex items-center gap-3">
+              <BookHeart className="w-8 h-8 text-accent" /> Memory Log
             </h1>
             
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
-                <Button className="rounded-full font-bold shadow-sm bg-accent hover:bg-accent/90 text-accent-foreground" data-testid="btn-log-memory">
+                <Button className="rounded-none font-sans text-xl neon-glow bg-accent hover:bg-accent/90 text-accent-foreground border-none" data-testid="btn-log-memory">
                   <Plus className="mr-2 h-4 w-4" /> Log Memory
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="pixel-border bg-card">
                 <DialogHeader>
-                  <DialogTitle>Log Quest Memory</DialogTitle>
+                  <DialogTitle className="font-serif text-sm neon-text">Log Quest Memory</DialogTitle>
                 </DialogHeader>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -92,8 +92,8 @@ export default function PartyMemories() {
                       name="title"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Title</FormLabel>
-                          <FormControl><Input placeholder="e.g. First steps!" {...field} data-testid="input-memory-title" /></FormControl>
+                          <FormLabel className="font-sans text-xl">Title</FormLabel>
+                          <FormControl><Input placeholder="e.g. First steps!" className="pixel-border bg-input text-xl rounded-none" {...field} data-testid="input-memory-title" /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -103,8 +103,8 @@ export default function PartyMemories() {
                       name="date"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Date</FormLabel>
-                          <FormControl><Input type="date" {...field} data-testid="input-memory-date" /></FormControl>
+                          <FormLabel className="font-sans text-xl">Date</FormLabel>
+                          <FormControl><Input type="date" className="pixel-border bg-input text-xl rounded-none" {...field} data-testid="input-memory-date" /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -114,19 +114,19 @@ export default function PartyMemories() {
                       name="mood"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Mood</FormLabel>
+                          <FormLabel className="font-sans text-xl">Mood</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger data-testid="select-memory-mood">
+                              <SelectTrigger className="pixel-border bg-input text-xl rounded-none" data-testid="select-memory-mood">
                                 <SelectValue placeholder="Select mood" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
-                              <SelectItem value="happy">Happy</SelectItem>
-                              <SelectItem value="excited">Excited</SelectItem>
-                              <SelectItem value="proud">Proud</SelectItem>
-                              <SelectItem value="peaceful">Peaceful</SelectItem>
-                              <SelectItem value="adventurous">Adventurous</SelectItem>
+                            <SelectContent className="pixel-border bg-popover rounded-none">
+                              <SelectItem className="font-sans text-xl" value="happy">Happy</SelectItem>
+                              <SelectItem className="font-sans text-xl" value="excited">Excited</SelectItem>
+                              <SelectItem className="font-sans text-xl" value="proud">Proud</SelectItem>
+                              <SelectItem className="font-sans text-xl" value="peaceful">Peaceful</SelectItem>
+                              <SelectItem className="font-sans text-xl" value="adventurous">Adventurous</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -138,13 +138,13 @@ export default function PartyMemories() {
                       name="body"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Story</FormLabel>
-                          <FormControl><Textarea placeholder="What happened today?" className="min-h-[120px]" {...field} data-testid="input-memory-body" /></FormControl>
+                          <FormLabel className="font-sans text-xl">Story</FormLabel>
+                          <FormControl><Textarea placeholder="What happened today?" className="min-h-[120px] pixel-border bg-input text-xl rounded-none" {...field} data-testid="input-memory-body" /></FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    <Button type="submit" className="w-full font-bold bg-accent hover:bg-accent/90 text-accent-foreground" disabled={createMemory.isPending} data-testid="btn-submit-memory">
+                    <Button type="submit" className="w-full font-sans text-xl bg-accent hover:bg-accent/90 text-accent-foreground rounded-none neon-glow border-none" disabled={createMemory.isPending} data-testid="btn-submit-memory">
                       {createMemory.isPending ? "Logging..." : "Commit to Log"}
                     </Button>
                   </form>
@@ -157,24 +157,24 @@ export default function PartyMemories() {
         {isLoading ? (
            <div className="space-y-4"><Skeleton className="h-32 w-full" /><Skeleton className="h-32 w-full" /></div>
         ) : memories?.length === 0 ? (
-           <div className="p-12 text-center border-2 border-dashed rounded-xl">
+           <div className="p-12 text-center pixel-border bg-card">
              <BookHeart className="w-12 h-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-             <h3 className="text-xl font-bold">Quest Log is Empty</h3>
-             <p className="text-muted-foreground mt-2">Log a memory to track your party's growth.</p>
+             <h3 className="text-sm font-serif neon-text">Memory Log is Empty</h3>
+             <p className="text-muted-foreground font-sans text-xl mt-2">Log a memory to track your kids's growth.</p>
            </div>
         ) : (
-           <div className="relative border-l-4 border-accent/20 ml-4 space-y-8 pb-8">
+           <div className="relative border-l-4 border-accent/50 ml-4 space-y-8 pb-8">
               {memories?.map(memory => (
                  <div key={memory.id} className="relative pl-8">
-                    <div className="absolute -left-[14px] top-4 w-6 h-6 rounded-full bg-accent border-4 border-background" />
-                    <Card className="hover-elevate shadow-sm border-2">
+                    <div className="absolute -left-[14px] top-4 w-6 h-6 rounded-none bg-accent border-4 border-background" />
+                    <Card className="hover-elevate pixel-border bg-card">
                        <CardContent className="p-6">
                           <div className="flex items-center justify-between mb-3">
-                             <span className="text-sm font-bold text-accent uppercase tracking-wider">{formatDate(memory.date)}</span>
-                             {memory.mood && <Badge variant="secondary" className="capitalize px-3 py-1 font-bold">{memory.mood}</Badge>}
+                             <span className="font-sans text-xl text-accent uppercase tracking-wider">{formatDate(memory.date)}</span>
+                             {memory.mood && <Badge className="capitalize px-3 py-1 font-sans text-lg rounded-none bg-secondary border border-accent text-accent">{memory.mood}</Badge>}
                           </div>
-                          <h3 className="text-2xl font-serif font-bold text-foreground mb-3">{memory.title}</h3>
-                          {memory.body && <p className="text-foreground text-lg leading-relaxed whitespace-pre-wrap">{memory.body}</p>}
+                          <h3 className="text-xs font-serif neon-text text-foreground mb-3">{memory.title}</h3>
+                          {memory.body && <p className="text-muted-foreground font-sans text-xl leading-relaxed whitespace-pre-wrap">{memory.body}</p>}
                        </CardContent>
                     </Card>
                  </div>
