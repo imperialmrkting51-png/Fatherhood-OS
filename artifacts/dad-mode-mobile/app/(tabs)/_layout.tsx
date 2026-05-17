@@ -11,6 +11,7 @@ import {
   useColorScheme,
 } from "react-native";
 import { useColors } from "@/hooks/useColors";
+import { FONTS } from "@/constants/fonts";
 
 function LoadingScreen() {
   const colors = useColors();
@@ -37,11 +38,15 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.mutedForeground,
+        tabBarLabelStyle: {
+          fontFamily: FONTS.pixel,
+          fontSize: 12,
+        },
         headerShown: false,
         tabBarStyle: {
           position: "absolute",
           backgroundColor: isIOS ? "transparent" : colors.background,
-          borderTopWidth: 1,
+          borderTopWidth: 2,
           borderTopColor: colors.border,
           elevation: 0,
           ...(isWeb ? { height: 64 } : {}),

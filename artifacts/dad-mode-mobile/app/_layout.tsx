@@ -1,10 +1,11 @@
 import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-  Inter_700Bold,
-  useFonts,
-} from "@expo-google-fonts/inter";
+  VT323_400Regular,
+  useFonts as useVT323,
+} from "@expo-google-fonts/vt323";
+import {
+  PressStart2P_400Regular,
+  useFonts as usePS2P,
+} from "@expo-google-fonts/press-start-2p";
 import { ClerkProvider, useAuth } from "@clerk/expo";
 import * as SecureStore from "expo-secure-store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -13,7 +14,6 @@ import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect, useState } from "react";
 import { Platform, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
@@ -64,12 +64,8 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
-  const [fontsLoaded, fontError] = useFonts({
-    Inter_400Regular,
-    Inter_500Medium,
-    Inter_600SemiBold,
-    Inter_700Bold,
-  });
+  const [vt323Loaded, vt323Error] = useVT323({ VT323_400Regular });
+  const [ps2pLoaded, ps2pError] = usePS2P({ PressStart2P_400Regular });
 
   const [fontTimedOut, setFontTimedOut] = useState(false);
 
@@ -78,7 +74,10 @@ export default function RootLayout() {
     return () => clearTimeout(timer);
   }, []);
 
-  const ready = fontsLoaded || !!fontError || fontTimedOut;
+  const ready =
+    (vt323Loaded || !!vt323Error) &&
+    (ps2pLoaded || !!ps2pError) ||
+    fontTimedOut;
 
   useEffect(() => {
     if (ready) {
@@ -96,8 +95,8 @@ export default function RootLayout() {
         <SafeAreaProvider>
           <QueryClientProvider client={queryClient}>
             <GestureHandlerRootView style={{ flex: 1, backgroundColor: BG }}>
-                <AuthSync />
-                <RootLayoutNav />
+              <AuthSync />
+              <RootLayoutNav />
             </GestureHandlerRootView>
           </QueryClientProvider>
         </SafeAreaProvider>

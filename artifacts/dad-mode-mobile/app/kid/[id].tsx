@@ -252,16 +252,16 @@ export default function KidDetail() {
 
   const [tab, setTab] = useState<Tab>("guide");
 
-  const { data: child } = useGetChild({ id: childId });
-  const { data: guidance, isLoading: guidanceLoading } = useGetChildGuidance({ id: childId });
+  const { data: child } = useGetChild(childId);
+  const { data: guidance, isLoading: guidanceLoading } = useGetChildGuidance(childId);
   const {
     data: activities,
     refetch: refetchActivities,
-  } = useListChildActivities({ id: childId });
+  } = useListChildActivities(childId);
   const {
     data: memories,
     refetch: refetchMemories,
-  } = useListChildMemories({ id: childId });
+  } = useListChildMemories(childId);
 
   const { mutateAsync: createActivity } = useCreateChildActivity();
   const { mutateAsync: createMemory } = useCreateChildMemory();

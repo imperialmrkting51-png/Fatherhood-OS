@@ -141,7 +141,7 @@ export default function Dashboard() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { user } = useAuth();
+  const { userId } = useAuth();
 
   const { data: dashboard, isLoading, refetch } = useGetDashboard();
   const { data: children } = useListChildren();

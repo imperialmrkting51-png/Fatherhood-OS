@@ -1,6 +1,5 @@
 import { useAuth } from "@clerk/expo";
-import { Redirect } from "expo-router";
-import { Feather } from "@expo/vector-icons";
+import { Redirect, useRouter } from "expo-router";
 import React from "react";
 import {
   ActivityIndicator,
@@ -11,8 +10,15 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
 import { useColors } from "@/hooks/useColors";
+import { PixelLogo } from "@/components/PixelLogo";
+import { FONTS } from "@/constants/fonts";
+
+const FEATURES = [
+  { label: "Kid Profiles", desc: "Age-based guidance for each child" },
+  { label: "Memory Journal", desc: "Log the moments that matter" },
+  { label: "XP & Streaks", desc: "Gamify your consistency" },
+];
 
 export default function Index() {
   const { isSignedIn, isLoaded } = useAuth();
@@ -32,8 +38,8 @@ export default function Index() {
     return <Redirect href="/(tabs)" />;
   }
 
-  const topPad = Platform.OS === "web" ? 67 : insets.top;
-  const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
+  const topPad = Platform.OS === "web" ? 24 : insets.top;
+  const bottomPad = Platform.OS === "web" ? 24 : insets.bottom;
 
   return (
     <View
@@ -41,77 +47,79 @@ export default function Index() {
         styles.container,
         {
           backgroundColor: colors.background,
-          paddingTop: topPad + 32,
-          paddingBottom: bottomPad + 24,
+          paddingTop: topPad + 24,
+          paddingBottom: bottomPad + 16,
         },
       ]}
     >
+      {/* Hero */}
       <View style={styles.hero}>
-        <View
-          style={[styles.iconWrapper, { backgroundColor: colors.secondary }]}
-        >
-          <Feather name="shield" size={40} color={colors.primary} />
-          <View
-            style={[styles.flameOverlay, { backgroundColor: "transparent" }]}
-          >
-            <Feather name="zap" size={22} color={colors.primary} />
-          </View>
-        </View>
+        <PixelLogo size={88} />
 
-        <Text style={[styles.title, { color: colors.primary }]}>DAD MODE</Text>
+        <Text style={[styles.title, { color: colors.primary }]}>
+          DAD MODE
+        </Text>
         <Text style={[styles.tagline, { color: colors.foreground }]}>
-          Track moments. Level up.
+          Your quest log for fatherhood.
         </Text>
         <Text style={[styles.description, { color: colors.mutedForeground }]}>
-          Build deeper bonds with your kids through daily quests, memories, and
-          age-based guidance.
+          Track quality time with your kids, log memories, plan activities, and
+          level up as a dad.
         </Text>
       </View>
 
-      <View style={styles.actions}>
-        <Pressable
-          style={({ pressed }) => [
-            styles.primaryBtn,
-            { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 },
-          ]}
-          onPress={() => router.push("/sign-in")}
-        >
-          <Text style={[styles.primaryBtnText, { color: colors.primaryForeground }]}>
-            Sign In
-          </Text>
-        </Pressable>
-
-        <Pressable
-          style={({ pressed }) => [
-            styles.secondaryBtn,
-            {
-              backgroundColor: colors.secondary,
-              borderColor: colors.border,
-              opacity: pressed ? 0.85 : 1,
-            },
-          ]}
-          onPress={() => router.push("/sign-up")}
-        >
-          <Text style={[styles.secondaryBtnText, { color: colors.foreground }]}>
-            Create Account
-          </Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.features}>
-        {[
-          { icon: "users" as const, label: "Kid Profiles" },
-          { icon: "book-open" as const, label: "Memory Journal" },
-          { icon: "activity" as const, label: "XP & Streaks" },
-        ].map((f) => (
-          <View key={f.label} style={styles.feature}>
-            <Feather name={f.icon} size={18} color={colors.accent} />
-            <Text style={[styles.featureLabel, { color: colors.mutedForeground }]}>
+      {/* Feature cards */}
+      <View style={styles.cards}>
+        {FEATURES.map((f) => (
+          <View
+            key={f.label}
+            style={[
+              styles.card,
+              {
+                backgroundColor: colors.card,
+                borderColor: colors.border,
+              },
+            ]}
+          >
+            <Text style={[styles.cardLabel, { color: colors.primary }]}>
               {f.label}
+            </Text>
+            <Text style={[styles.cardDesc, { color: colors.mutedForeground }]}>
+              {f.desc}
             </Text>
           </View>
         ))}
       </View>
+
+      {/* Actions */}
+      <View style={styles.actions}>
+        <Pressable
+          style={({ pressed }) => [
+            styles.questBtn,
+            {
+              backgroundColor: colors.primary,
+              opacity: pressed ? 0.85 : 1,
+              shadowColor: colors.primary,
+            },
+          ]}
+          onPress={() => router.push("/sign-up")}
+        >
+          <Text style={[styles.questBtnText, { color: colors.primaryForeground }]}>
+            START YOUR QUEST
+          </Text>
+        </Pressable>
+
+        <Pressable onPress={() => router.push("/sign-in")}>
+          <Text style={[styles.signInLink, { color: colors.mutedForeground }]}>
+            Already have an account?{" "}
+            <Text style={{ color: colors.primary }}>Sign In</Text>
+          </Text>
+        </Pressable>
+      </View>
+
+      <Text style={[styles.footer, { color: colors.mutedForeground }]}>
+        Built for dads who show up.
+      </Text>
     </View>
   );
 }
@@ -124,81 +132,86 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    paddingHorizontal: 28,
+    paddingHorizontal: 24,
     justifyContent: "space-between",
   },
   hero: {
     alignItems: "center",
     gap: 12,
-    flex: 1,
-    justifyContent: "center",
-  },
-  iconWrapper: {
-    width: 96,
-    height: 96,
-    borderRadius: 24,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 8,
-    position: "relative",
-  },
-  flameOverlay: {
-    position: "absolute",
-    bottom: 18,
-    right: 18,
+    paddingTop: 8,
   },
   title: {
-    fontSize: 36,
-    fontFamily: "Inter_700Bold",
-    letterSpacing: 6,
+    fontSize: 22,
+    fontFamily: FONTS.title,
+    letterSpacing: 4,
+    marginTop: 8,
+    textShadowColor: "rgba(232,160,69,0.7)",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 12,
   },
   tagline: {
-    fontSize: 18,
-    fontFamily: "Inter_500Medium",
+    fontSize: 22,
+    fontFamily: FONTS.pixel,
+    textAlign: "center",
   },
   description: {
-    fontSize: 15,
-    fontFamily: "Inter_400Regular",
+    fontSize: 18,
+    fontFamily: FONTS.pixel,
     textAlign: "center",
-    lineHeight: 22,
-    marginTop: 4,
-    maxWidth: 300,
+    lineHeight: 26,
+    maxWidth: 320,
+  },
+  cards: {
+    gap: 8,
+    marginVertical: 16,
+  },
+  card: {
+    borderWidth: 2,
+    borderRadius: 2,
+    padding: 12,
+    gap: 4,
+    shadowColor: "#e8a045",
+    shadowOffset: { width: 3, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 0,
+    elevation: 2,
+  },
+  cardLabel: {
+    fontSize: 14,
+    fontFamily: FONTS.pixel,
+  },
+  cardDesc: {
+    fontSize: 17,
+    fontFamily: FONTS.pixel,
   },
   actions: {
-    gap: 12,
-    marginVertical: 32,
+    gap: 14,
+    alignItems: "center",
   },
-  primaryBtn: {
-    borderRadius: 8,
+  questBtn: {
+    width: "100%",
+    borderRadius: 2,
     paddingVertical: 16,
     alignItems: "center",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 4,
   },
-  primaryBtnText: {
-    fontSize: 16,
-    fontFamily: "Inter_600SemiBold",
+  questBtnText: {
+    fontSize: 14,
+    fontFamily: FONTS.title,
+    letterSpacing: 2,
   },
-  secondaryBtn: {
-    borderRadius: 8,
-    paddingVertical: 16,
-    alignItems: "center",
-    borderWidth: 1,
+  signInLink: {
+    fontSize: 17,
+    fontFamily: FONTS.pixel,
+    textAlign: "center",
   },
-  secondaryBtnText: {
-    fontSize: 16,
-    fontFamily: "Inter_600SemiBold",
-  },
-  features: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 24,
-    paddingBottom: 8,
-  },
-  feature: {
-    alignItems: "center",
-    gap: 6,
-  },
-  featureLabel: {
-    fontSize: 11,
-    fontFamily: "Inter_500Medium",
+  footer: {
+    fontSize: 17,
+    fontFamily: FONTS.pixel,
+    textAlign: "center",
+    paddingBottom: 4,
   },
 });

@@ -1,4 +1,4 @@
-import { useSignIn, useOAuth } from "@clerk/expo";
+import { useSignIn, useOAuth, useClerk } from "@clerk/expo";
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import { Feather } from "@expo/vector-icons";
@@ -18,6 +18,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useColors } from "@/hooks/useColors";
+import { FONTS } from "@/constants/fonts";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -35,7 +36,8 @@ export default function SignIn() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  const { signIn, setActive, isLoaded } = useSignIn();
+  const { signIn } = useSignIn();
+  const { setActive } = useClerk();
   const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" });
 
   const [email, setEmail] = useState("");
@@ -45,29 +47,26 @@ export default function SignIn() {
   const [error, setError] = useState<string | null>(null);
 
   const handleEmailSignIn = async () => {
-    if (!email || !password || isLoading || !isLoaded || !signIn) return;
+    if (!email || !password || isLoading || !signIn) return;
     if (Platform.OS !== "web") {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     setIsLoading(true);
     setError(null);
     try {
-      const result = await signIn.create({
-        identifier: email,
-        password,
-      });
-      if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
+      await signIn.create({ identifier: email, password });
+      if (signIn.status === "complete") {
+        await setActive({ session: signIn.createdSessionId! });
         router.replace("/(tabs)");
       } else {
         setError("Sign in could not be completed. Please try again.");
       }
     } catch (err: unknown) {
       const clerkErr = err as { errors?: Array<{ message: string }> };
-      const msg =
+      setError(
         clerkErr?.errors?.[0]?.message ??
-        (err instanceof Error ? err.message : "Sign in failed. Please try again.");
-      setError(msg);
+          (err instanceof Error ? err.message : "Sign in failed. Please try again.")
+      );
     } finally {
       setIsLoading(false);
     }
@@ -90,7 +89,7 @@ export default function SignIn() {
     }
   }, [startOAuthFlow, router]);
 
-  const topPad = Platform.OS === "web" ? 67 : insets.top;
+  const topPad = Platform.OS === "web" ? 24 : insets.top;
 
   return (
     <KeyboardAvoidingView
@@ -100,38 +99,36 @@ export default function SignIn() {
       <ScrollView
         contentContainerStyle={[
           styles.container,
-          { paddingTop: topPad + 24, paddingBottom: insets.bottom + 40 },
+          { paddingTop: topPad + 16, paddingBottom: insets.bottom + 40 },
         ]}
         keyboardShouldPersistTaps="handled"
       >
-        <Pressable
-          style={[styles.backBtn, { paddingTop: 4 }]}
-          onPress={() => router.back()}
-        >
+        <Pressable style={styles.backBtn} onPress={() => router.back()}>
           <Feather name="arrow-left" size={22} color={colors.foreground} />
         </Pressable>
 
         <View style={styles.header}>
           <Text style={[styles.title, { color: colors.primary }]}>
-            Welcome back
+            WELCOME BACK
           </Text>
           <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
-            Sign in to continue your journey
+            Sign in to continue your quest
           </Text>
         </View>
 
         <View style={styles.form}>
           <View style={styles.field}>
             <Text style={[styles.label, { color: colors.mutedForeground }]}>
-              Email
+              EMAIL
             </Text>
             <TextInput
               style={[
                 styles.input,
                 {
-                  backgroundColor: colors.input,
+                  backgroundColor: colors.card,
                   borderColor: colors.border,
                   color: colors.foreground,
+                  fontFamily: FONTS.pixel,
                 },
               ]}
               value={email}
@@ -146,16 +143,17 @@ export default function SignIn() {
 
           <View style={styles.field}>
             <Text style={[styles.label, { color: colors.mutedForeground }]}>
-              Password
+              PASSWORD
             </Text>
             <View>
               <TextInput
                 style={[
                   styles.input,
                   {
-                    backgroundColor: colors.input,
+                    backgroundColor: colors.card,
                     borderColor: colors.border,
                     color: colors.foreground,
+                    fontFamily: FONTS.pixel,
                     paddingRight: 48,
                   },
                 ]}
@@ -190,34 +188,26 @@ export default function SignIn() {
               styles.primaryBtn,
               {
                 backgroundColor:
-                  !email || !password || isLoading
-                    ? colors.muted
-                    : colors.primary,
+                  !email || !password || isLoading || !signIn ? colors.muted : colors.primary,
                 opacity: pressed ? 0.85 : 1,
+                shadowColor: colors.primary,
               },
             ]}
             onPress={handleEmailSignIn}
-            disabled={!email || !password || isLoading}
+            disabled={!email || !password || isLoading || !signIn}
           >
             {isLoading ? (
               <ActivityIndicator color={colors.primaryForeground} />
             ) : (
-              <Text
-                style={[
-                  styles.primaryBtnText,
-                  { color: colors.primaryForeground },
-                ]}
-              >
-                Sign In
+              <Text style={[styles.primaryBtnText, { color: colors.primaryForeground }]}>
+                SIGN IN
               </Text>
             )}
           </Pressable>
 
           <View style={styles.divider}>
             <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-            <Text style={[styles.dividerText, { color: colors.mutedForeground }]}>
-              or
-            </Text>
+            <Text style={[styles.dividerText, { color: colors.mutedForeground }]}>or</Text>
             <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
           </View>
 
@@ -225,7 +215,7 @@ export default function SignIn() {
             style={({ pressed }) => [
               styles.googleBtn,
               {
-                backgroundColor: colors.secondary,
+                backgroundColor: colors.card,
                 borderColor: colors.border,
                 opacity: pressed ? 0.85 : 1,
               },
@@ -241,10 +231,10 @@ export default function SignIn() {
 
         <View style={styles.footer}>
           <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
-            Don&apos;t have an account?{" "}
+            No account yet?{" "}
           </Text>
           <Link href="/sign-up">
-            <Text style={[styles.link, { color: colors.accent }]}>Sign up</Text>
+            <Text style={[styles.link, { color: colors.primary }]}>Sign up</Text>
           </Link>
         </View>
       </ScrollView>
@@ -254,45 +244,32 @@ export default function SignIn() {
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },
-  container: {
-    flexGrow: 1,
-    paddingHorizontal: 24,
-  },
+  container: { flexGrow: 1, paddingHorizontal: 24 },
   backBtn: {
     width: 40,
     height: 40,
     justifyContent: "center",
-    marginBottom: 16,
+    marginBottom: 20,
   },
-  header: {
-    marginBottom: 32,
-    gap: 6,
-  },
+  header: { marginBottom: 28, gap: 8 },
   title: {
-    fontSize: 28,
-    fontFamily: "Inter_700Bold",
+    fontSize: 18,
+    fontFamily: FONTS.title,
+    letterSpacing: 2,
+    textShadowColor: "rgba(232,160,69,0.6)",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 10,
   },
-  subtitle: {
-    fontSize: 15,
-    fontFamily: "Inter_400Regular",
-  },
-  form: {
-    gap: 16,
-  },
-  field: {
-    gap: 6,
-  },
-  label: {
-    fontSize: 13,
-    fontFamily: "Inter_500Medium",
-  },
+  subtitle: { fontSize: 18, fontFamily: FONTS.pixel },
+  form: { gap: 16 },
+  field: { gap: 6 },
+  label: { fontSize: 13, fontFamily: FONTS.pixel, letterSpacing: 1 },
   input: {
-    borderWidth: 1,
-    borderRadius: 8,
+    borderWidth: 2,
+    borderRadius: 2,
     paddingHorizontal: 14,
     paddingVertical: 13,
-    fontSize: 15,
-    fontFamily: "Inter_400Regular",
+    fontSize: 18,
   },
   eyeBtn: {
     position: "absolute",
@@ -301,57 +278,32 @@ const styles = StyleSheet.create({
     bottom: 0,
     justifyContent: "center",
   },
-  errorText: {
-    fontSize: 13,
-    fontFamily: "Inter_400Regular",
-  },
+  errorText: { fontSize: 16, fontFamily: FONTS.pixel },
   primaryBtn: {
-    borderRadius: 8,
+    borderRadius: 2,
     paddingVertical: 15,
     alignItems: "center",
     marginTop: 4,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 3,
   },
-  primaryBtnText: {
-    fontSize: 16,
-    fontFamily: "Inter_600SemiBold",
-  },
-  divider: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-  },
-  dividerText: {
-    fontSize: 13,
-    fontFamily: "Inter_400Regular",
-  },
+  primaryBtnText: { fontSize: 14, fontFamily: FONTS.title, letterSpacing: 2 },
+  divider: { flexDirection: "row", alignItems: "center", gap: 12 },
+  dividerLine: { flex: 1, height: 1 },
+  dividerText: { fontSize: 17, fontFamily: FONTS.pixel },
   googleBtn: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: 10,
-    borderWidth: 1,
-    borderRadius: 8,
+    borderWidth: 2,
+    borderRadius: 2,
     paddingVertical: 14,
   },
-  googleBtnText: {
-    fontSize: 15,
-    fontFamily: "Inter_500Medium",
-  },
-  footer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 32,
-  },
-  footerText: {
-    fontSize: 14,
-    fontFamily: "Inter_400Regular",
-  },
-  link: {
-    fontSize: 14,
-    fontFamily: "Inter_500Medium",
-  },
+  googleBtnText: { fontSize: 18, fontFamily: FONTS.pixel },
+  footer: { flexDirection: "row", justifyContent: "center", marginTop: 28 },
+  footerText: { fontSize: 17, fontFamily: FONTS.pixel },
+  link: { fontSize: 17, fontFamily: FONTS.pixel },
 });
