@@ -11,3 +11,9 @@ id = "Gk0AKGH7GdEoAz36Wg4FY"
 uri = "file://attached_assets/dad-mode-qr.png"
 type = "image"
 title = "Dad Mode — scan to open on your phone"
+
+[[outputs]]
+id = "sRbq0QK3vp0dDlNFnJCJg"
+uri = "file://exports/dad-mode-qr.png"
+type = "image"
+title = "Dad Mode — Web QR Code"
