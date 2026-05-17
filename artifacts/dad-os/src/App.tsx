@@ -5,14 +5,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 
 import Dashboard from "@/pages/dashboard";
-import ChildrenList from "@/pages/children/list";
-import ChildNew from "@/pages/children/new";
-import ChildDetail from "@/pages/children/detail";
-import ChildEdit from "@/pages/children/edit";
-import ChildActivities from "@/pages/children/activities";
-import ChildMemories from "@/pages/children/memories";
-import MemoryNew from "@/pages/memories/new";
-import MemoryDetail from "@/pages/memories/detail";
+import PartyList from "@/pages/party/list";
+import PartyDetail from "@/pages/party/detail";
+import PartyTraining from "@/pages/party/training";
+import PartyMemories from "@/pages/party/memories";
+import Starters from "@/pages/starters";
+import Games from "@/pages/games";
+import Challenges from "@/pages/challenges";
+import Settings from "@/pages/settings";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,14 +27,14 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Dashboard} />
-      <Route path="/children" component={ChildrenList} />
-      <Route path="/children/new" component={ChildNew} />
-      <Route path="/children/:id" component={ChildDetail} />
-      <Route path="/children/:id/edit" component={ChildEdit} />
-      <Route path="/children/:id/activities" component={ChildActivities} />
-      <Route path="/children/:id/memories" component={ChildMemories} />
-      <Route path="/memories/new/:childId" component={MemoryNew} />
-      <Route path="/memories/:id" component={MemoryDetail} />
+      <Route path="/party" component={PartyList} />
+      <Route path="/party/:id" component={PartyDetail} />
+      <Route path="/party/:id/training" component={PartyTraining} />
+      <Route path="/party/:id/memories" component={PartyMemories} />
+      <Route path="/starters" component={Starters} />
+      <Route path="/games" component={Games} />
+      <Route path="/challenges" component={Challenges} />
+      <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
   );

@@ -14,6 +14,13 @@ import {
 
 const router: IRouter = Router();
 
+type DbActivity = typeof activitiesTable.$inferSelect;
+
+const serialize = (a: DbActivity) => ({
+  ...a,
+  createdAt: a.createdAt instanceof Date ? a.createdAt.toISOString() : a.createdAt,
+});
+
 router.get("/children/:id/activities", async (req, res): Promise<void> => {
   const params = ListChildActivitiesParams.safeParse(req.params);
   if (!params.success) {
@@ -30,7 +37,7 @@ router.get("/children/:id/activities", async (req, res): Promise<void> => {
     .from(activitiesTable)
     .where(eq(activitiesTable.childId, params.data.id))
     .orderBy(activitiesTable.createdAt);
-  res.json(ListChildActivitiesResponse.parse(activities));
+  res.json(ListChildActivitiesResponse.parse(activities.map(serialize)));
 });
 
 router.post("/children/:id/activities", async (req, res): Promise<void> => {
@@ -53,7 +60,7 @@ router.post("/children/:id/activities", async (req, res): Promise<void> => {
     .insert(activitiesTable)
     .values({ ...parsed.data, childId: params.data.id })
     .returning();
-  res.status(201).json(activity);
+  res.status(201).json(serialize(activity));
 });
 
 router.patch("/activities/:id", async (req, res): Promise<void> => {
@@ -76,7 +83,7 @@ router.patch("/activities/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Activity not found" });
     return;
   }
-  res.json(UpdateActivityResponse.parse(activity));
+  res.json(UpdateActivityResponse.parse(serialize(activity)));
 });
 
 router.delete("/activities/:id", async (req, res): Promise<void> => {

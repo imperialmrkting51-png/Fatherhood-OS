@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { eq, count } from "drizzle-orm";
-import { db, childrenTable, activitiesTable, memoriesTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
+import { db, childrenTable } from "@workspace/db";
 import {
   GetChildParams,
   GetChildResponse,
@@ -17,9 +17,16 @@ import { calculateAge, getGuidanceForAge } from "../lib/guidance";
 
 const router: IRouter = Router();
 
+type DbChild = typeof childrenTable.$inferSelect;
+
+const serialize = (c: DbChild) => ({
+  ...c,
+  createdAt: c.createdAt instanceof Date ? c.createdAt.toISOString() : c.createdAt,
+});
+
 router.get("/children", async (req, res): Promise<void> => {
   const children = await db.select().from(childrenTable).orderBy(childrenTable.createdAt);
-  res.json(ListChildrenResponse.parse(children));
+  res.json(ListChildrenResponse.parse(children.map(serialize)));
 });
 
 router.post("/children", async (req, res): Promise<void> => {
@@ -29,7 +36,7 @@ router.post("/children", async (req, res): Promise<void> => {
     return;
   }
   const [child] = await db.insert(childrenTable).values(parsed.data).returning();
-  res.status(201).json(GetChildResponse.parse(child));
+  res.status(201).json(GetChildResponse.parse(serialize(child)));
 });
 
 router.get("/children/:id", async (req, res): Promise<void> => {
@@ -43,7 +50,7 @@ router.get("/children/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Child not found" });
     return;
   }
-  res.json(GetChildResponse.parse(child));
+  res.json(GetChildResponse.parse(serialize(child)));
 });
 
 router.patch("/children/:id", async (req, res): Promise<void> => {
@@ -66,7 +73,7 @@ router.patch("/children/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Child not found" });
     return;
   }
-  res.json(UpdateChildResponse.parse(child));
+  res.json(UpdateChildResponse.parse(serialize(child)));
 });
 
 router.delete("/children/:id", async (req, res): Promise<void> => {

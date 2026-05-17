@@ -16,6 +16,13 @@ import {
 
 const router: IRouter = Router();
 
+type DbMemory = typeof memoriesTable.$inferSelect;
+
+const serialize = (m: DbMemory) => ({
+  ...m,
+  createdAt: m.createdAt instanceof Date ? m.createdAt.toISOString() : m.createdAt,
+});
+
 router.get("/children/:id/memories", async (req, res): Promise<void> => {
   const params = ListChildMemoriesParams.safeParse(req.params);
   if (!params.success) {
@@ -32,7 +39,7 @@ router.get("/children/:id/memories", async (req, res): Promise<void> => {
     .from(memoriesTable)
     .where(eq(memoriesTable.childId, params.data.id))
     .orderBy(desc(memoriesTable.date));
-  res.json(ListChildMemoriesResponse.parse(memories));
+  res.json(ListChildMemoriesResponse.parse(memories.map(serialize)));
 });
 
 router.post("/children/:id/memories", async (req, res): Promise<void> => {
@@ -55,7 +62,7 @@ router.post("/children/:id/memories", async (req, res): Promise<void> => {
     .insert(memoriesTable)
     .values({ ...parsed.data, childId: params.data.id })
     .returning();
-  res.status(201).json(memory);
+  res.status(201).json(serialize(memory));
 });
 
 router.get("/memories/:id", async (req, res): Promise<void> => {
@@ -69,7 +76,7 @@ router.get("/memories/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Memory not found" });
     return;
   }
-  res.json(GetMemoryResponse.parse(memory));
+  res.json(GetMemoryResponse.parse(serialize(memory)));
 });
 
 router.patch("/memories/:id", async (req, res): Promise<void> => {
@@ -92,7 +99,7 @@ router.patch("/memories/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Memory not found" });
     return;
   }
-  res.json(UpdateMemoryResponse.parse(memory));
+  res.json(UpdateMemoryResponse.parse(serialize(memory)));
 });
 
 router.delete("/memories/:id", async (req, res): Promise<void> => {
