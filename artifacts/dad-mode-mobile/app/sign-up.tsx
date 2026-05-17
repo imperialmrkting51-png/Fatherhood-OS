@@ -1,4 +1,4 @@
-import { useSignUp, useSSO } from "@clerk/expo";
+import { useSignUp, useOAuth } from "@clerk/expo";
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import { Feather } from "@expo/vector-icons";
@@ -35,63 +35,78 @@ export default function SignUp() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  const { signUp, errors, fetchStatus } = useSignUp();
-  const { startSSOFlow } = useSSO();
+  const { signUp, setActive, isLoaded } = useSignUp();
+  const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" });
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [step, setStep] = useState<"form" | "verify">("form");
-
-  const isLoading = fetchStatus === "fetching";
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
-    if (!email || !password || isLoading) return;
+    if (!email || !password || isLoading || !isLoaded || !signUp) return;
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const { error } = await signUp.password({ emailAddress: email, password });
-    if (error) return;
-    await signUp.verifications.sendEmailCode();
-    setStep("verify");
+    setIsLoading(true);
+    setError(null);
+    try {
+      await signUp.create({ emailAddress: email, password });
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      setStep("verify");
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Sign up failed. Please try again.";
+      setError(msg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleVerify = async () => {
-    if (!code || isLoading) return;
+    if (!code || isLoading || !isLoaded || !signUp) return;
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await signUp.verifications.verifyEmailCode({ code });
-    if (signUp.status === "complete") {
-      await signUp.finalize({
-        navigate: ({ decorateUrl }) => {
-          const url = decorateUrl("/");
-          if (url.startsWith("http")) {
-            if (typeof window !== "undefined") window.location.href = url;
-          } else {
-            router.replace("/(tabs)");
-          }
-        },
-      });
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await signUp.attemptEmailAddressVerification({ code });
+      if (result.status === "complete") {
+        await setActive({ session: result.createdSessionId });
+        router.replace("/(tabs)");
+      }
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Verification failed. Please try again.";
+      setError(msg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (!signUp) return;
+    try {
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+    } catch (err) {
+      console.error(err);
     }
   };
 
   const handleGoogleSignUp = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
-      const { createdSessionId, setActive } = await startSSOFlow({
-        strategy: "oauth_google",
+      const { createdSessionId, setActive: sa } = await startOAuthFlow({
         redirectUrl: AuthSession.makeRedirectUri(),
       });
-      if (createdSessionId) {
-        setActive!({
-          session: createdSessionId,
-          navigate: async ({ decorateUrl }) => {
-            router.replace("/(tabs)");
-          },
-        });
+      if (createdSessionId && sa) {
+        await sa({ session: createdSessionId });
+        router.replace("/(tabs)");
       }
     } catch (err) {
       console.error(err);
     }
-  }, [startSSOFlow, router]);
+  }, [startOAuthFlow, router]);
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
@@ -104,7 +119,14 @@ export default function SignUp() {
             { paddingTop: topPad + 24, paddingBottom: insets.bottom + 40 },
           ]}
         >
-          <View style={styles.header}>
+          <Pressable
+            style={[styles.backBtn]}
+            onPress={() => { setStep("form"); setError(null); }}
+          >
+            <Feather name="arrow-left" size={22} color={colors.foreground} />
+          </Pressable>
+
+          <View style={[styles.header, { alignItems: "flex-start" }]}>
             <View
               style={[
                 styles.verifyIcon,
@@ -134,9 +156,7 @@ export default function SignUp() {
                   styles.codeInput,
                   {
                     backgroundColor: colors.input,
-                    borderColor: errors?.fields?.code
-                      ? colors.destructive
-                      : colors.border,
+                    borderColor: colors.border,
                     color: colors.foreground,
                   },
                 ]}
@@ -148,12 +168,13 @@ export default function SignUp() {
                 maxLength={6}
                 autoFocus
               />
-              {errors?.fields?.code && (
-                <Text style={[styles.errorText, { color: colors.destructive }]}>
-                  {errors.fields.code.message}
-                </Text>
-              )}
             </View>
+
+            {error && (
+              <Text style={[styles.errorText, { color: colors.destructive }]}>
+                {error}
+              </Text>
+            )}
 
             <Pressable
               style={({ pressed }) => [
@@ -181,10 +202,7 @@ export default function SignUp() {
               )}
             </Pressable>
 
-            <Pressable
-              style={styles.resendBtn}
-              onPress={() => signUp.verifications.sendEmailCode()}
-            >
+            <Pressable style={styles.resendBtn} onPress={handleResend}>
               <Text style={[styles.resendText, { color: colors.accent }]}>
                 Resend code
               </Text>
@@ -235,9 +253,7 @@ export default function SignUp() {
                 styles.input,
                 {
                   backgroundColor: colors.input,
-                  borderColor: errors?.fields?.emailAddress
-                    ? colors.destructive
-                    : colors.border,
+                  borderColor: colors.border,
                   color: colors.foreground,
                 },
               ]}
@@ -249,11 +265,6 @@ export default function SignUp() {
               keyboardType="email-address"
               autoComplete="email"
             />
-            {errors?.fields?.emailAddress && (
-              <Text style={[styles.errorText, { color: colors.destructive }]}>
-                {errors.fields.emailAddress.message}
-              </Text>
-            )}
           </View>
 
           <View style={styles.field}>
@@ -266,9 +277,7 @@ export default function SignUp() {
                   styles.input,
                   {
                     backgroundColor: colors.input,
-                    borderColor: errors?.fields?.password
-                      ? colors.destructive
-                      : colors.border,
+                    borderColor: colors.border,
                     color: colors.foreground,
                     paddingRight: 48,
                   },
@@ -291,12 +300,13 @@ export default function SignUp() {
                 />
               </Pressable>
             </View>
-            {errors?.fields?.password && (
-              <Text style={[styles.errorText, { color: colors.destructive }]}>
-                {errors.fields.password.message}
-              </Text>
-            )}
           </View>
+
+          {error && (
+            <Text style={[styles.errorText, { color: colors.destructive }]}>
+              {error}
+            </Text>
+          )}
 
           <Pressable
             style={({ pressed }) => [
@@ -396,7 +406,6 @@ const styles = StyleSheet.create({
   header: {
     marginBottom: 32,
     gap: 6,
-    alignItems: "flex-start",
   },
   title: {
     fontSize: 28,
@@ -437,7 +446,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   errorText: {
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
   },
   primaryBtn: {

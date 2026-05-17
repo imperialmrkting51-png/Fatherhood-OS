@@ -1,4 +1,4 @@
-import { useSignIn, useSSO } from "@clerk/expo";
+import { useSignIn, useOAuth } from "@clerk/expo";
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import { Feather } from "@expo/vector-icons";
@@ -35,53 +35,52 @@ export default function SignIn() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
 
-  const { signIn, errors, fetchStatus } = useSignIn();
-  const { startSSOFlow } = useSSO();
+  const { signIn, setActive, isLoaded } = useSignIn();
+  const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" });
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
-  const isLoading = fetchStatus === "fetching";
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleEmailSignIn = async () => {
-    if (!email || !password || isLoading) return;
+    if (!email || !password || isLoading || !isLoaded || !signIn) return;
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    const { error } = await signIn.password({ emailAddress: email, password });
-    if (error) return;
-    if (signIn.status === "complete") {
-      await signIn.finalize({
-        navigate: ({ decorateUrl }) => {
-          const url = decorateUrl("/");
-          if (url.startsWith("http")) {
-            if (typeof window !== "undefined") window.location.href = url;
-          } else {
-            router.replace("/(tabs)");
-          }
-        },
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await signIn.create({
+        identifier: email,
+        password,
       });
+      if (result.status === "complete") {
+        await setActive({ session: result.createdSessionId });
+        router.replace("/(tabs)");
+      }
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Sign in failed. Please try again.";
+      setError(msg);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleGoogleSignIn = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     try {
-      const { createdSessionId, setActive } = await startSSOFlow({
-        strategy: "oauth_google",
+      const { createdSessionId, setActive: sa } = await startOAuthFlow({
         redirectUrl: AuthSession.makeRedirectUri(),
       });
-      if (createdSessionId) {
-        setActive!({
-          session: createdSessionId,
-          navigate: async ({ decorateUrl }) => {
-            router.replace("/(tabs)");
-          },
-        });
+      if (createdSessionId && sa) {
+        await sa({ session: createdSessionId });
+        router.replace("/(tabs)");
       }
     } catch (err) {
       console.error(err);
     }
-  }, [startSSOFlow, router]);
+  }, [startOAuthFlow, router]);
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
@@ -123,7 +122,7 @@ export default function SignIn() {
                 styles.input,
                 {
                   backgroundColor: colors.input,
-                  borderColor: errors?.fields?.identifier ? colors.destructive : colors.border,
+                  borderColor: colors.border,
                   color: colors.foreground,
                 },
               ]}
@@ -135,11 +134,6 @@ export default function SignIn() {
               keyboardType="email-address"
               autoComplete="email"
             />
-            {errors?.fields?.identifier && (
-              <Text style={[styles.errorText, { color: colors.destructive }]}>
-                {errors.fields.identifier.message}
-              </Text>
-            )}
           </View>
 
           <View style={styles.field}>
@@ -152,7 +146,7 @@ export default function SignIn() {
                   styles.input,
                   {
                     backgroundColor: colors.input,
-                    borderColor: errors?.fields?.password ? colors.destructive : colors.border,
+                    borderColor: colors.border,
                     color: colors.foreground,
                     paddingRight: 48,
                   },
@@ -175,12 +169,13 @@ export default function SignIn() {
                 />
               </Pressable>
             </View>
-            {errors?.fields?.password && (
-              <Text style={[styles.errorText, { color: colors.destructive }]}>
-                {errors.fields.password.message}
-              </Text>
-            )}
           </View>
+
+          {error && (
+            <Text style={[styles.errorText, { color: colors.destructive }]}>
+              {error}
+            </Text>
+          )}
 
           <Pressable
             style={({ pressed }) => [
@@ -238,7 +233,7 @@ export default function SignIn() {
 
         <View style={styles.footer}>
           <Text style={[styles.footerText, { color: colors.mutedForeground }]}>
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
           </Text>
           <Link href="/sign-up">
             <Text style={[styles.link, { color: colors.accent }]}>Sign up</Text>
@@ -299,7 +294,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   errorText: {
-    fontSize: 12,
+    fontSize: 13,
     fontFamily: "Inter_400Regular",
   },
   primaryBtn: {
