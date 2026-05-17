@@ -18,7 +18,8 @@
     },
     "android": {},
     "web": {
-      "favicon": "./assets/images/icon.png"
+      "favicon": "./assets/images/icon.png",
+      "backgroundColor": "#0d1829"
     },
     "plugins": [
       [

@@ -10,8 +10,8 @@ import * as SecureStore from "expo-secure-store";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import React, { useEffect } from "react";
-import { Platform } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Platform, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -20,6 +20,9 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { setBaseUrl, setAuthTokenGetter } from "@workspace/api-client-react";
 
 SplashScreen.preventAutoHideAsync();
+
+const BG = "#0d1829";
+const FONT_TIMEOUT_MS = 6000;
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
 
@@ -68,28 +71,39 @@ export default function RootLayout() {
     Inter_700Bold,
   });
 
+  const [fontTimedOut, setFontTimedOut] = useState(false);
+
   useEffect(() => {
-    if (fontsLoaded || fontError) {
+    const timer = setTimeout(() => setFontTimedOut(true), FONT_TIMEOUT_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const ready = fontsLoaded || !!fontError || fontTimedOut;
+
+  useEffect(() => {
+    if (ready) {
       SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, fontError]);
+  }, [ready]);
 
-  if (!fontsLoaded && !fontError) return null;
+  if (!ready) {
+    return <View style={{ flex: 1, backgroundColor: BG }} />;
+  }
 
   return (
-    <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-      <SafeAreaProvider>
-        <ErrorBoundary>
+    <ErrorBoundary>
+      <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
+        <SafeAreaProvider>
           <QueryClientProvider client={queryClient}>
-            <GestureHandlerRootView style={{ flex: 1 }}>
+            <GestureHandlerRootView style={{ flex: 1, backgroundColor: BG }}>
               <KeyboardProvider>
                 <AuthSync />
                 <RootLayoutNav />
               </KeyboardProvider>
             </GestureHandlerRootView>
           </QueryClientProvider>
-        </ErrorBoundary>
-      </SafeAreaProvider>
-    </ClerkProvider>
+        </SafeAreaProvider>
+      </ClerkProvider>
+    </ErrorBoundary>
   );
 }
