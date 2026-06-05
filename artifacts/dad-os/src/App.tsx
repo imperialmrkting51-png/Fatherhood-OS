@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
+import Privacy from "@/pages/privacy";
 
 import Dashboard from "@/pages/dashboard";
 import PartyList from "@/pages/party/list";
@@ -191,6 +192,7 @@ function AppRoutes() {
             <Route path="/" component={HomeRedirect} />
             <Route path="/sign-in/*?" component={SignInPage} />
             <Route path="/sign-up/*?" component={SignUpPage} />
+            <Route path="/privacy" component={Privacy} />
             <Route path="/dashboard" component={() => <ProtectedRoute component={Dashboard} />} />
             <Route path="/party" component={() => <ProtectedRoute component={PartyList} />} />
             <Route path="/party/:id" component={() => <ProtectedRoute component={PartyDetail} />} />
