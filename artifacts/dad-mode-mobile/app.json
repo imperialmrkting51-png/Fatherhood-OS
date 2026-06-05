@@ -11,7 +11,7 @@
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#171E38"
+      "backgroundColor": "#0D1522"
     },
     "ios": {
       "bundleIdentifier": "com.imperialmarketing.dados",
@@ -28,7 +28,7 @@
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#171E38"
+        "backgroundColor": "#0D1522"
       },
       "permissions": [],
       "blockedPermissions": [

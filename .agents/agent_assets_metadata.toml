@@ -17,3 +17,9 @@ id = "sRbq0QK3vp0dDlNFnJCJg"
 uri = "file://exports/dad-mode-qr.png"
 type = "image"
 title = "Dad Mode — scan to open (production)"
+
+[[outputs]]
+id = "kEPBFPyGlU5LpoBixbYhS"
+uri = "file://screenshots/dad_os_icon_preview.png"
+type = "image"
+title = "Dad OS app icon — main / Android adaptive (circle) / splash"
