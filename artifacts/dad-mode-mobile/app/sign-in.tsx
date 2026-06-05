@@ -84,8 +84,8 @@ export default function SignIn() {
         await sa({ session: createdSessionId });
         router.replace("/(tabs)");
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
+      // OAuth flow cancelled or failed silently — user stays on sign-in screen
     }
   }, [startOAuthFlow, router]);
 

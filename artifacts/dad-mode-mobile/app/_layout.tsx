@@ -68,6 +68,10 @@ function RootLayoutNav() {
         name="kid/[id]"
         options={{ headerShown: false, presentation: "card" }}
       />
+      <Stack.Screen
+        name="privacy"
+        options={{ headerShown: false, presentation: "card" }}
+      />
     </Stack>
   );
 }

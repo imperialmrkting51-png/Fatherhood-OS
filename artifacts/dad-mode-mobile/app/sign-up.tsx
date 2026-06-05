@@ -119,8 +119,8 @@ export default function SignUp() {
     if (!resource) return;
     try {
       await resource.prepareEmailAddressVerification({ strategy: "email_code" });
-    } catch (err) {
-      console.error(err);
+    } catch {
+      // Non-critical — resend attempt failed silently
     }
   };
 
@@ -136,8 +136,8 @@ export default function SignUp() {
         await sa({ session: createdSessionId });
         router.replace("/(tabs)");
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
+      // OAuth flow cancelled or failed silently — user stays on sign-up screen
     }
   }, [startOAuthFlow, router]);
 

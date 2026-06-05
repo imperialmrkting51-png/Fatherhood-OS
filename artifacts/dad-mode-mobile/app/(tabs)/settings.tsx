@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useGetDashboard } from "@workspace/api-client-react";
 import { C, F, GLOW } from "@/constants/theme";
 
 function Row({
@@ -39,6 +40,7 @@ export default function Settings() {
   const { signOut } = useAuth();
   const { user } = useUser();
   const router = useRouter();
+  const { data: dashboard } = useGetDashboard();
 
   const topPad = Platform.OS === "web" ? 20 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
@@ -46,6 +48,9 @@ export default function Settings() {
   const displayName = user?.fullName || user?.firstName || user?.primaryEmailAddress?.emailAddress?.split("@")[0] || "Dad";
   const email = user?.primaryEmailAddress?.emailAddress ?? "";
   const initials = displayName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+
+  // Compute global dad level from total memories across all kids
+  const dadLevel = Math.floor((dashboard?.totalMemories ?? 0) / 5) + 1;
 
   const handleSignOut = () => {
     Alert.alert("Sign Out", "Ready to end your session?", [
@@ -80,7 +85,7 @@ export default function Settings() {
         </View>
         <View style={s.levelBadge}>
           <Feather name="zap" size={14} color={C.primary} />
-          <Text style={[s.levelText, { color: C.primary }]}>LVL 1</Text>
+          <Text style={[s.levelText, { color: C.primary }]}>LVL {dadLevel}</Text>
         </View>
       </View>
 
@@ -98,7 +103,7 @@ export default function Settings() {
         <Text style={[s.sectionLabel, { color: C.mutedFg }]}>INFO</Text>
         <View style={s.rows}>
           <Row icon="info" label="Version" value="1.0.0" />
-          <Row icon="shield" label="Dad Mode" value="Quest log for fathers" />
+          <Row icon="shield" label="Privacy Policy" onPress={() => router.push("/privacy")} />
         </View>
       </View>
 

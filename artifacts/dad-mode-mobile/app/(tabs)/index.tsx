@@ -1,7 +1,8 @@
 import { useAuth } from "@clerk/expo";
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -127,6 +128,8 @@ function MemoryRow({ memory }: { memory: Memory }) {
 }
 
 // ─── Dashboard ───────────────────────────────────────────────────────────────
+const todayKey = () => `dad-quests-${new Date().toISOString().split("T")[0]}`;
+
 export default function Dashboard() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
@@ -136,14 +139,24 @@ export default function Dashboard() {
   const topPad = Platform.OS === "web" ? 20 : insets.top;
   const bottomPad = Platform.OS === "web" ? 34 : insets.bottom;
 
+  // Load today's quest state from persistent storage
+  useEffect(() => {
+    AsyncStorage.getItem(todayKey())
+      .then((val) => { if (val) setCompletedQuests(JSON.parse(val) as string[]); })
+      .catch(() => {});
+  }, []);
+
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long", month: "long", day: "numeric",
   }).toUpperCase();
 
-  const toggleQuest = (id: string) =>
-    setCompletedQuests((prev) =>
-      prev.includes(id) ? prev.filter((q) => q !== id) : [...prev, id]
-    );
+  const toggleQuest = (id: string) => {
+    setCompletedQuests((prev) => {
+      const next = prev.includes(id) ? prev.filter((q) => q !== id) : [...prev, id];
+      AsyncStorage.setItem(todayKey(), JSON.stringify(next)).catch(() => {});
+      return next;
+    });
+  };
 
   if (isLoading) {
     return (
@@ -197,8 +210,8 @@ export default function Dashboard() {
           <QuestCard
             icon="book"
             label="Log a Memory"
-            sub={firstKid ? "Growth Check" : "Add a kid"}
-            accentColor="#3b82f6"
+            sub={firstKid ? "Open Journal" : "Add a kid"}
+            accentColor="#6baed6"
             done={completedQuests.includes("q3")}
             onToggle={() => toggleQuest("q3")}
             onPress={() => router.push(firstKid ? `/kid/${firstKid.id}` : "/(tabs)/kids")}
@@ -207,182 +220,129 @@ export default function Dashboard() {
       </View>
 
       {/* Stats */}
-      <View style={s.statsRow}>
-        <StatCard icon="users" label="Kids" value={dashboard?.totalChildren ?? 0} color={C.primary} />
-        <StatCard icon="book-open" label="Memories" value={dashboard?.totalMemories ?? 0} color={C.accent} />
-        <StatCard icon="check-circle" label="Done" value={dashboard?.completedActivities ?? 0} color={C.green} />
+      <View style={s.section}>
+        <View style={s.sectionHead}>
+          <Feather name="bar-chart-2" size={16} color={C.primary} />
+          <Text style={[s.sectionTitle, GLOW]}>Stats</Text>
+        </View>
+        <View style={s.statsRow}>
+          <StatCard icon="users" label="Kids" value={dashboard?.totalChildren ?? 0} color={C.primary} />
+          <StatCard icon="book-open" label="Memories" value={dashboard?.totalMemories ?? 0} color="#6baed6" />
+          <StatCard icon="check-circle" label="Done" value={dashboard?.completedActivities ?? 0} color={C.accent} />
+        </View>
       </View>
+
+      {/* Your Kids */}
+      {(dashboard?.childrenSummary?.length ?? 0) > 0 && (
+        <View style={s.section}>
+          <View style={s.sectionHead}>
+            <Feather name="users" size={16} color={C.primary} />
+            <Text style={[s.sectionTitle, GLOW]}>Your Party</Text>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.kidsRow}>
+            {dashboard!.childrenSummary.map((child) => (
+              <KidChip
+                key={child.id}
+                child={child}
+                onPress={() => router.push(`/kid/${child.id}`)}
+              />
+            ))}
+          </ScrollView>
+        </View>
+      )}
 
       {/* Memory Log */}
-      <View style={s.section}>
-        <Text style={[s.sectionTitle, GLOW]}>Memory Log</Text>
-
-        {!dashboard?.recentMemories?.length ? (
-          <View style={[s.emptyCard, { borderColor: C.border }]}>
-            <View style={[s.emptyIcon, { backgroundColor: C.secondary, borderColor: C.primary + "55" }]}>
-              <Feather name="book" size={28} color={C.mutedFg} />
-            </View>
-            <Text style={[s.emptyTitle, { color: C.fg }]}>No memories logged</Text>
-            <Text style={[s.emptyBody, { color: C.mutedFg }]}>
-              Complete the "Log a Memory" quest to see it here.
-            </Text>
+      {(dashboard?.recentMemories?.length ?? 0) > 0 && (
+        <View style={s.section}>
+          <View style={s.sectionHead}>
+            <Feather name="book-open" size={16} color={C.primary} />
+            <Text style={[s.sectionTitle, GLOW]}>Recent Memories</Text>
           </View>
-        ) : (
-          <View style={{ gap: 10 }}>
-            {dashboard.recentMemories.slice(0, 5).map((m) => (
-              <MemoryRow key={m.id} memory={m} />
+          <View style={s.memList}>
+            {dashboard!.recentMemories.slice(0, 5).map((mem) => (
+              <MemoryRow key={mem.id} memory={mem} />
             ))}
           </View>
-        )}
-      </View>
+        </View>
+      )}
 
-      {/* Your Party */}
-      <View style={s.section}>
-        <Text style={[s.sectionTitle, GLOW]}>Your Kids</Text>
-
-        {!dashboard?.childrenSummary?.length ? (
-          <View style={[s.emptyCard, { borderColor: C.border }]}>
-            <Text style={[s.emptyBody, { color: C.mutedFg }]}>Your party is empty.</Text>
-            <Pressable
-              style={({ pressed }) => [s.emptyBtn, { borderColor: C.primary, opacity: pressed ? 0.8 : 1 }]}
-              onPress={() => router.push("/(tabs)/kids")}
-            >
-              <Text style={[s.emptyBtnText, { color: C.primary }]}>Add Kid</Text>
-            </Pressable>
-          </View>
-        ) : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <View style={{ flexDirection: "row", gap: 10 }}>
-              {dashboard.childrenSummary.map((child) => (
-                <KidChip key={child.id} child={child} onPress={() => router.push(`/kid/${child.id}`)} />
-              ))}
-            </View>
-          </ScrollView>
-        )}
-      </View>
+      {/* Empty state */}
+      {(dashboard?.totalChildren ?? 0) === 0 && (
+        <View style={s.emptyState}>
+          <Feather name="users" size={32} color={C.primary} />
+          <Text style={[s.emptyTitle, GLOW]}>YOUR PARTY IS EMPTY</Text>
+          <Text style={[s.emptyBody, { color: C.mutedFg }]}>Add your first kid to start the quest.</Text>
+          <Pressable
+            style={({ pressed }) => [s.emptyBtn, { opacity: pressed ? 0.8 : 1 }]}
+            onPress={() => router.push("/(tabs)/kids")}
+          >
+            <Feather name="user-plus" size={16} color={C.primaryFg} />
+            <Text style={[s.emptyBtnText, { color: C.primaryFg }]}>ADD A KID</Text>
+          </Pressable>
+        </View>
+      )}
     </ScrollView>
   );
 }
 
 const s = StyleSheet.create({
   loading: { flex: 1, backgroundColor: C.bg, alignItems: "center", justifyContent: "center" },
-  container: { paddingHorizontal: 20, gap: 28 },
+  container: { paddingHorizontal: 16, gap: 28 },
 
-  header: { gap: 6 },
-  headerTitle: { fontFamily: F.title, fontSize: 11, color: C.fg, lineHeight: 20 },
-  headerDate: { fontFamily: F.body, fontSize: 18, marginTop: 6 },
+  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
+  headerTitle: { fontFamily: F.title, fontSize: 11, color: C.primary, letterSpacing: 2 },
+  headerDate: { fontFamily: F.body, fontSize: 15, marginTop: 4 },
 
   section: { gap: 12 },
   sectionHead: { flexDirection: "row", alignItems: "center", gap: 8 },
-  sectionTitle: { fontFamily: F.title, fontSize: 9, color: C.fg },
+  sectionTitle: { fontFamily: F.title, fontSize: 11, color: C.primary, letterSpacing: 2 },
 
   questList: { gap: 10 },
   questCard: {
-    backgroundColor: C.card,
-    borderWidth: 2,
-    borderRadius: 2,
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: "row", alignItems: "center",
+    backgroundColor: C.card, borderWidth: 2, borderRadius: 2,
     overflow: "hidden",
   },
   questBar: { width: 4, alignSelf: "stretch" },
-  questBody: { flex: 1, padding: 14, gap: 4 },
+  questBody: { flex: 1, paddingVertical: 12, paddingHorizontal: 14, gap: 4 },
   questLabel: { flexDirection: "row", alignItems: "center", gap: 8 },
   questTitle: { fontFamily: F.body, fontSize: 18 },
-  questSub: { fontFamily: F.body, fontSize: 17 },
-  questCheck: {
-    width: 42,
-    height: 42,
-    margin: 12,
-    borderWidth: 2,
-    borderRadius: 2,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  questCheckInner: { width: 18, height: 18, borderWidth: 2, borderRadius: 0 },
+  questSub: { fontFamily: F.body, fontSize: 14 },
+  questCheck: { width: 40, height: 40, marginRight: 12, borderRadius: 2, borderWidth: 2, alignItems: "center", justifyContent: "center" },
+  questCheckInner: { width: 18, height: 18, borderRadius: 1, borderWidth: 2 },
 
   statsRow: { flexDirection: "row", gap: 10 },
   statCard: {
-    flex: 1,
-    backgroundColor: C.card,
-    borderWidth: 2,
-    borderRadius: 2,
-    alignItems: "center",
-    paddingVertical: 16,
-    gap: 6,
+    flex: 1, backgroundColor: C.card, borderWidth: 2, borderRadius: 2,
+    paddingVertical: 14, alignItems: "center", gap: 6,
   },
-  statValue: { fontFamily: F.title, fontSize: 22, color: C.fg },
-  statLabel: { fontFamily: F.body, fontSize: 14, letterSpacing: 1 },
+  statValue: { fontFamily: F.title, fontSize: 20, color: C.fg },
+  statLabel: { fontFamily: F.body, fontSize: 13, textAlign: "center" },
 
+  kidsRow: { gap: 10, paddingRight: 4 },
   kidChip: {
-    width: 110,
-    backgroundColor: C.card,
-    borderWidth: 2,
-    borderRadius: 2,
-    padding: 12,
-    alignItems: "center",
-    gap: 6,
+    backgroundColor: C.card, borderWidth: 2, borderRadius: 2,
+    padding: 12, alignItems: "center", gap: 6, minWidth: 90,
   },
-  kidAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 2,
-    borderWidth: 2,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  kidAvatarText: { fontFamily: F.title, fontSize: 16 },
-  kidName: { fontFamily: F.body, fontSize: 16, textAlign: "center" },
-  kidAge: { fontFamily: F.body, fontSize: 14 },
-  kidLevel: { fontFamily: F.body, fontSize: 15 },
+  kidAvatar: { width: 44, height: 44, borderRadius: 2, borderWidth: 2, alignItems: "center", justifyContent: "center" },
+  kidAvatarText: { fontFamily: F.title, fontSize: 18 },
+  kidName: { fontFamily: F.body, fontSize: 16, maxWidth: 88, textAlign: "center" },
+  kidAge: { fontFamily: F.body, fontSize: 13 },
+  kidLevel: { fontFamily: F.body, fontSize: 14 },
 
+  memList: { gap: 8 },
   memRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 12,
-    backgroundColor: C.card,
-    borderWidth: 2,
-    borderRadius: 2,
-    padding: 12,
+    flexDirection: "row", alignItems: "flex-start", gap: 12,
+    backgroundColor: C.card, borderWidth: 2, borderRadius: 2, padding: 12,
   },
-  memIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 2,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
+  memIcon: { width: 32, height: 32, borderRadius: 2, borderWidth: 2, alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 },
   memTitle: { fontFamily: F.body, fontSize: 17 },
-  memBody: { fontFamily: F.body, fontSize: 15, lineHeight: 20 },
-  memDate: { fontFamily: F.body, fontSize: 14, flexShrink: 0, marginTop: 2 },
+  memBody: { fontFamily: F.body, fontSize: 14, lineHeight: 20 },
+  memDate: { fontFamily: F.body, fontSize: 13, flexShrink: 0 },
 
-  emptyCard: {
-    backgroundColor: C.card,
-    borderWidth: 2,
-    borderRadius: 2,
-    padding: 28,
-    alignItems: "center",
-    gap: 12,
-  },
-  emptyIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: 2,
-    borderWidth: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 4,
-  },
-  emptyTitle: { fontFamily: F.title, fontSize: 9, textAlign: "center" },
-  emptyBody: { fontFamily: F.body, fontSize: 17, textAlign: "center", lineHeight: 24 },
-  emptyBtn: {
-    borderWidth: 2,
-    borderRadius: 2,
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    marginTop: 4,
-  },
-  emptyBtnText: { fontFamily: F.body, fontSize: 18, letterSpacing: 1 },
+  emptyState: { alignItems: "center", gap: 12, paddingVertical: 32 },
+  emptyTitle: { fontFamily: F.title, fontSize: 11, color: C.fg, textAlign: "center" },
+  emptyBody: { fontFamily: F.body, fontSize: 17, textAlign: "center", maxWidth: 260 },
+  emptyBtn: { flexDirection: "row", alignItems: "center", gap: 8, backgroundColor: C.primary, paddingHorizontal: 24, paddingVertical: 13, borderRadius: 2, marginTop: 8 },
+  emptyBtnText: { fontFamily: F.body, fontSize: 16, letterSpacing: 1 },
 });
