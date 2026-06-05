@@ -6,7 +6,6 @@ import { publishableKeyFromHost } from "@clerk/react/internal";
 import { shadcn } from "@clerk/themes";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Layout } from "@/components/layout";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
 
@@ -130,9 +129,7 @@ function ProtectedRoute({ component: Component }: { component: React.ComponentTy
   return (
     <>
       <Show when="signed-in">
-        <Layout>
-          <Component />
-        </Layout>
+        <Component />
       </Show>
       <Show when="signed-out">
         <Redirect to="/" />
