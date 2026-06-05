@@ -1,0 +1,1 @@
+- [Android permission stripping](android-permissions.md) — `android.permissions:[]` does NOT remove permissions injected by autolinked Expo modules; remove unused deps or use `blockedPermissions`, then verify via `expo config --type introspect`.
