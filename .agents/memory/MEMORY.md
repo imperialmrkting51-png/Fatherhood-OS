@@ -1,1 +1,2 @@
 - [Android permission stripping](android-permissions.md) — `android.permissions:[]` does NOT remove permissions injected by autolinked Expo modules; remove unused deps or use `blockedPermissions`, then verify via `expo config --type introspect`.
+- [Duplicate @types/react](types-react-duplication.md) — RN pins 19.1.17 as a peer; do NOT add a global @types/react override (breaks mobile). Fix shadcn ref errors per-component instead.

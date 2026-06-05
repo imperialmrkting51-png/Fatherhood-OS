@@ -232,7 +232,7 @@ export default function Dashboard() {
                         <ChildAvatar name={child.name} color={child.avatarColor} className="w-14 h-14 text-lg rounded-none border border-primary" />
                         <div className="flex-1 min-w-0">
                           <h3 className="font-serif text-xs text-foreground truncate mb-1">{child.name}</h3>
-                          <p className="text-xl font-sans text-primary">Level {Math.floor((child.memoriesCount || 0) / 5) + 1}</p>
+                          <p className="text-xl font-sans text-primary">Level {Math.floor((child.memoryCount || 0) / 5) + 1}</p>
                         </div>
                       </CardContent>
                     </Card>

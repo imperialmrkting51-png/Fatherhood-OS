@@ -1,4 +1,4 @@
-import { useListChildActivities, useCreateChildActivity, useUpdateActivity, useDeleteActivity, getListChildActivitiesQueryKey, useGetChild } from "@workspace/api-client-react";
+import { useListChildActivities, useCreateChildActivity, useUpdateActivity, useDeleteActivity, getListChildActivitiesQueryKey, useGetChild, getGetChildQueryKey } from "@workspace/api-client-react";
 import { Layout } from "@/components/layout";
 import { Link, useParams } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
@@ -31,8 +31,8 @@ export default function PartyActivities() {
   const { addXP } = useGameState();
   const queryClient = useQueryClient();
 
-  const { data: child } = useGetChild(id, { query: { enabled: !!id } });
-  const { data: activities, isLoading } = useListChildActivities(id, { query: { enabled: !!id } });
+  const { data: child } = useGetChild(id, { query: { enabled: !!id, queryKey: getGetChildQueryKey(id) } });
+  const { data: activities, isLoading } = useListChildActivities(id, { query: { enabled: !!id, queryKey: getListChildActivitiesQueryKey(id) } });
   const createActivity = useCreateChildActivity();
   const updateActivity = useUpdateActivity();
   const deleteActivity = useDeleteActivity();

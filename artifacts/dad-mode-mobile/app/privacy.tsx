@@ -8,7 +8,7 @@ import { C, F, GLOW } from "@/constants/theme";
 const SECTIONS = [
   {
     title: "What We Collect",
-    body: "Dad Mode collects only what you give us:\n\n• Your email address and name (via your sign-in account)\n• Your children's first names, birthdates, and optional notes\n• Activities you create for each child\n• Memory journal entries you write (title, body, date, mood)\n\nWe do not collect location data, device identifiers, contacts, or any data you did not explicitly enter.",
+    body: "Dad Mode collects only what you give us:\n\n• Your email address and name (via your sign-in account)\n• Your children's first names, birthdates, and optional notes\n• Activities you create for each child\n• Memory journal entries you write (title, body, date, optional mood, and optional photo)\n\nWe do not collect location data, device identifiers, contacts, or any data you did not explicitly enter.",
   },
   {
     title: "How We Use Your Data",
@@ -52,7 +52,7 @@ export default function Privacy() {
       </View>
 
       <ScrollView contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
-        <Text style={[s.updated, { color: C.mutedFg }]}>Last updated: June 2025</Text>
+        <Text style={[s.updated, { color: C.mutedFg }]}>Last updated: June 2026</Text>
 
         {SECTIONS.map((sec) => (
           <View key={sec.title} style={s.section}>

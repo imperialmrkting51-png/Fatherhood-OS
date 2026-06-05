@@ -1,4 +1,4 @@
-import { useGetChild, useGetChildGuidance, useListChildActivities, useListChildMemories } from "@workspace/api-client-react";
+import { useGetChild, useGetChildGuidance, useListChildActivities, useListChildMemories, getGetChildQueryKey, getGetChildGuidanceQueryKey, getListChildActivitiesQueryKey, getListChildMemoriesQueryKey } from "@workspace/api-client-react";
 import { Layout } from "@/components/layout";
 import { ChildAvatar } from "@/components/child-avatar";
 import { formatAge, formatDate } from "@/lib/utils";
@@ -13,10 +13,10 @@ export default function PartyDetail() {
   const params = useParams();
   const id = Number(params.id);
 
-  const { data: child, isLoading: loadingChild } = useGetChild(id, { query: { enabled: !!id } });
-  const { data: guidance, isLoading: loadingGuidance } = useGetChildGuidance(id, { query: { enabled: !!id } });
-  const { data: activities, isLoading: loadingActivities } = useListChildActivities(id, { query: { enabled: !!id } });
-  const { data: memories, isLoading: loadingMemories } = useListChildMemories(id, { query: { enabled: !!id } });
+  const { data: child, isLoading: loadingChild } = useGetChild(id, { query: { enabled: !!id, queryKey: getGetChildQueryKey(id) } });
+  const { data: guidance, isLoading: loadingGuidance } = useGetChildGuidance(id, { query: { enabled: !!id, queryKey: getGetChildGuidanceQueryKey(id) } });
+  const { data: activities, isLoading: loadingActivities } = useListChildActivities(id, { query: { enabled: !!id, queryKey: getListChildActivitiesQueryKey(id) } });
+  const { data: memories, isLoading: loadingMemories } = useListChildMemories(id, { query: { enabled: !!id, queryKey: getListChildMemoriesQueryKey(id) } });
 
   if (loadingChild) {
     return (

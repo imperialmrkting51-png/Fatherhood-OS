@@ -1,4 +1,4 @@
-import { useListChildMemories, useCreateChildMemory, getListChildMemoriesQueryKey, useGetChild } from "@workspace/api-client-react";
+import { useListChildMemories, useCreateChildMemory, getListChildMemoriesQueryKey, useGetChild, getGetChildQueryKey } from "@workspace/api-client-react";
 import { Layout } from "@/components/layout";
 import { Link, useParams } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,8 +32,8 @@ export default function PartyMemories() {
   const { addXP } = useGameState();
   const queryClient = useQueryClient();
 
-  const { data: child } = useGetChild(id, { query: { enabled: !!id } });
-  const { data: memories, isLoading } = useListChildMemories(id, { query: { enabled: !!id } });
+  const { data: child } = useGetChild(id, { query: { enabled: !!id, queryKey: getGetChildQueryKey(id) } });
+  const { data: memories, isLoading } = useListChildMemories(id, { query: { enabled: !!id, queryKey: getListChildMemoriesQueryKey(id) } });
   const createMemory = useCreateChildMemory();
 
   const [open, setOpen] = useState(false);
