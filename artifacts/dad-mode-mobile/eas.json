@@ -26,9 +26,11 @@
         "COREPACK_INTEGRITY_KEYS": "0"
       },
       "ios": {
+        "image": "latest",
         "buildConfiguration": "Release"
       },
       "android": {
+        "image": "latest",
         "buildType": "app-bundle"
       }
     }
