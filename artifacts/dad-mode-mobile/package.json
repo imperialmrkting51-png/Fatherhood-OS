@@ -59,6 +59,7 @@
     "@expo-google-fonts/press-start-2p": "^0.4.1",
     "@expo-google-fonts/vt323": "^0.4.1",
     "expo-auth-session": "~7.0.11",
+    "expo-build-properties": "~1.0.10",
     "expo-clipboard": "~8.0.8",
     "expo-crypto": "~15.0.9",
     "expo-secure-store": "~15.0.8"

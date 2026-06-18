@@ -62,6 +62,16 @@
           "configureAndroidBackup": true,
           "faceIDPermission": "Allow Dad Mode to use Face ID."
         }
+      ],
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "packagingOptions": {
+              "pickFirst": ["META-INF/versions/9/OSGI-INF/MANIFEST.MF"]
+            }
+          }
+        }
       ]
     ],
     "experiments": {
