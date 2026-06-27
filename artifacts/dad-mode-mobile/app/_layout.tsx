@@ -30,10 +30,12 @@ const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
 
 // Route Clerk API calls through the same proxy as the dad-os web app so that
 // the Clerk dev-instance domain restriction doesn't block the mobile web build.
+// Native (iOS/Android) must talk to Clerk's Frontend API directly — using the
+// web proxy there breaks the OAuth deep-link handshake and loops sign-in.
 const clerkProxyUrl =
-  typeof window !== "undefined"
+  Platform.OS === "web"
     ? `${window.location.origin}/api/__clerk`
-    : `https://${process.env.EXPO_PUBLIC_DOMAIN ?? ""}/api/__clerk`;
+    : undefined;
 
 const tokenCache =
   Platform.OS !== "web"
